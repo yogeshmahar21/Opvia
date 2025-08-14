@@ -1,7 +1,12 @@
 import express from 'express';
-import globalErrorHandler from './middleware.js/GlobalErrorHandler.js';
+import globalErrorHandler from './middleware/GlobalErrorHandler.js';
+import userRouter from './user/userRouter.js';
 
 const app = express();
+
+app.use(express.json());
+
+app.use('/api', userRouter);
 
 //Global Error Handler
 
