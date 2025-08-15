@@ -3,11 +3,6 @@ import passport from 'passport';
 import session from 'express-session';
 import globalErrorHandler from './middleware/GlobalErrorHandler.js';
 import userRouter from './user/userRouter.js';
-import { googleStrategy } from './config/googleAuth.js';
-<<<<<<< HEAD
-import chatRoutes from './chat/chatRoutes.js';
-=======
->>>>>>> 72a98e0fd9d0a407381ccd77211ff18a4c6e984f
 
 const app = express();
 
@@ -55,6 +50,7 @@ app.get('/', (req, res) => {
 
 // --- API Routes ---
 app.use('/api/users', userRouter);
+app.use('/api/posts', postRouter);
 
 // --- Global Error Handler ---
 app.use(globalErrorHandler);
