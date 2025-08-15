@@ -100,4 +100,93 @@ const createUser = async (req, res, next) => {
 
 }
 
-export { createUser }
+const login = async(req, res, next) => {
+    const { email, password } = req.body;
+
+    if(!email || !password) {
+        return next(createHttpError(400,'All fields required'));
+    } 
+
+    //Joi validation
+
+    const schema = Joi.object({
+        email : Joi.string().email().required(),
+        password: Joi.string().required()
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if(error) {
+        return next(createHttpError('401', error.message));
+    }
+
+    //Check in the Database
+
+    let user;
+
+    try {
+        user = await userModel.findOne({ email });
+    } catch (err) {
+        console.error(err);
+        return next('Unable to fetch user', err);
+    }
+
+    if(!user) {
+        return next(createHttpError('401', 'No user exists'));
+    }
+
+    //Verify Password
+
+    const VerifyPassword = bcrypt.compare(password, user.password);
+
+    if(!VerifyPassword) {
+        return next(createHttpError(401, 'Password not matched'));
+    }
+
+    //Token Generation
+
+    const token = jwt.sign({ sub : user._id }, config.secret, { expiresIn: "30d" });
+
+    res.status(200).json({'token':token});
+}
+
+const getUserById = async(req, res, next) => {
+   try {
+        const user = await userModel.findById(req.params.id);
+
+        if (!user) {
+            return next(createHttpError(404, 'User not found'));
+        }
+
+        res.status(200).json(user);
+    } catch (err) {
+        console.error(err);
+        return next(createHttpError(500, 'Error fetching user'));
+    }
+}
+const updateUserById = async (req, res, next) => {
+    try {
+        const updateData = { ...req.body };
+
+        if (updateData.password) {
+            updateData.password = await bcrypt.hash(updateData.password, 10);
+        }
+
+        const user = await userModel.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true, runValidators: true }
+        );
+
+        if (!user) {
+            return next(createHttpError(404, 'User not found'));
+        }
+
+        res.status(200).json(user);
+    } catch (err) {
+        console.error(err);
+        return next(createHttpError(500, 'Error updating user'));
+    }
+};
+
+export { createUser, login, getUserById, updateUserById }

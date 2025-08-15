@@ -4,7 +4,10 @@ import session from 'express-session';
 import globalErrorHandler from './middleware/GlobalErrorHandler.js';
 import userRouter from './user/userRouter.js';
 import { googleStrategy } from './config/googleAuth.js';
+<<<<<<< HEAD
 import chatRoutes from './chat/chatRoutes.js';
+=======
+>>>>>>> 72a98e0fd9d0a407381ccd77211ff18a4c6e984f
 
 const app = express();
 
@@ -15,7 +18,7 @@ app.use("/api/chat", chatRoutes);
 
 // --- Session & Passport Setup ---
 app.use(session({
-  secret: 'your-secret-key', // You can move this to .env
+  secret: 'your-secret-key', // Move to .env in future
   resave: true,
   saveUninitialized: true
 }));
@@ -36,7 +39,6 @@ app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'em
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    // Successful login
     res.redirect('/');
   }
 );
@@ -51,8 +53,8 @@ app.get('/', (req, res) => {
   res.send(req.isAuthenticated() ? `Hello, ${req.user.displayName}` : 'Please log in');
 });
 
-// API route
-app.use('/api', userRouter);
+// --- API Routes ---
+app.use('/api/users', userRouter);
 
 // --- Global Error Handler ---
 app.use(globalErrorHandler);
