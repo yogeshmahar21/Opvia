@@ -150,4 +150,43 @@ const login = async(req, res, next) => {
     res.status(200).json({'token':token});
 }
 
-export { createUser, login }
+const getUserById = async(req, res, next) => {
+   try {
+        const user = await userModel.findById(req.params.id);
+
+        if (!user) {
+            return next(createHttpError(404, 'User not found'));
+        }
+
+        res.status(200).json(user);
+    } catch (err) {
+        console.error(err);
+        return next(createHttpError(500, 'Error fetching user'));
+    }
+}
+const updateUserById = async (req, res, next) => {
+    try {
+        const updateData = { ...req.body };
+
+        if (updateData.password) {
+            updateData.password = await bcrypt.hash(updateData.password, 10);
+        }
+
+        const user = await userModel.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true, runValidators: true }
+        );
+
+        if (!user) {
+            return next(createHttpError(404, 'User not found'));
+        }
+
+        res.status(200).json(user);
+    } catch (err) {
+        console.error(err);
+        return next(createHttpError(500, 'Error updating user'));
+    }
+};
+
+export { createUser, login, getUserById, updateUserById }
