@@ -3,12 +3,15 @@ import passport from 'passport';
 import session from 'express-session';
 import globalErrorHandler from './middleware/GlobalErrorHandler.js';
 import userRouter from './user/userRouter.js';
-import { googleStrategy } from './config/googleAuth.js'; // Create this as shown earlier
+import { googleStrategy } from './config/googleAuth.js';
+import chatRoutes from './chat/chatRoutes.js';
 
 const app = express();
 
 // Parse JSON
 app.use(express.json());
+
+app.use("/api/chat", chatRoutes);
 
 // --- Session & Passport Setup ---
 app.use(session({
