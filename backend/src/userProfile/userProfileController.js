@@ -5,6 +5,7 @@ import cloudinary from '../config/cloudinaryConfig.js';
 import fs from "node:fs";
 import { fileURLToPath } from 'node:url';
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -64,6 +65,7 @@ const createProfile = async (req, res, next) => {
     }
 
     if(profile) {
+        console.log(profile);
         return next(createHttpError(400, 'User Already Exists'));
     }
 
@@ -127,4 +129,113 @@ const updateSkills = async(req, res, next) => {
     }
 }
 
-export { createProfile, updateSkills };
+const updateStatus = async(req, res, next) => {
+    const { newStatus } = req.body;
+
+    if(!newStatus) {
+        return next(createHttpError(401, 'Status required'));
+    }
+
+    const { profileId } = req.params;
+
+    if(!profileId) {
+        return next(createHttpError(401, 'Unauthorized'));
+    }
+
+    //Can do Joi validation here later
+
+    //updating the status
+
+    let updatedStatus;
+
+    try {
+        updatedStatus = await userProfileModel.findOneAndUpdate(
+            { _id : profileId},
+            { userStatus : newStatus },
+        { new : true }
+    );
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database error'));
+    }
+
+    if(updatedStatus) {
+        return res.status(201).json({'message' : 'Status updated successfully'});
+    } else {
+        return next(createHttpError(500, 'Internal Server Error'));
+    }
+
+}
+
+const connection = async(req, res, next) => {
+    const { id } = req.body; //Sender's Id
+    const { profileId } = req.params; //Reciever's Id
+
+    if(!id || !profileId) {
+        return next(createHttpError(400,'All fields required'));
+    }
+
+    //getting sender
+
+    let sender;
+
+    try {
+        sender = await userProfileModel.findOne({ _id : id });
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    //Adding reciever to sender's connectionIds
+
+    const senderFriendList = sender.connectionIds;
+
+    senderFriendList.push(profileId.toString());
+
+    //updating sender connecionIds
+
+    let updatedSender;
+
+    try {
+        updatedSender = await userProfileModel.findOneAndUpdate(
+            { _id : id },
+            { connectionIds : senderFriendList },
+            { new: true }
+        )
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    // Getting Reciever
+
+    let reciever;
+
+    try {
+        reciever = await userProfileModel.findOne({ _id : profileId }); 
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    const recieverConnectionList = reciever.connectionIds;
+
+    recieverConnectionList.push(id.toString());
+
+    //updating reciever connecionIds
+
+    let updatedReciever;
+
+    try {
+        updatedReciever = await userProfileModel.findOneAndUpdate(
+            { _id : profileId },
+            { connectionIds : recieverConnectionList },
+            { new: true }
+        )
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    if(updatedSender && updatedReciever) {
+        res.status(201).json({'message': 'Connected'});
+    }
+
+}
+
+export { createProfile, updateSkills, updateStatus, connection };

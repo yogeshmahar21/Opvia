@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from 'node:path';   
 import { fileURLToPath } from 'node:url';
 import userModel from "../user/userModel.js";
+import userProfileModel from "../userProfile/userProfileModel.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -92,7 +93,25 @@ const postJob = async (req, res, next) => {
         return next(createHttpError(400, err instanceof Error ? err.message : 'Failed to connect Database'));
     }
 
-    res.status(201).json({'id' : job._id});
+    //Adding the JobId to userProfile's postedJobIds
+
+    let userProfile;
+
+    try {
+        userProfile = await userProfileModel.findOneAndUpdate(
+            { name },
+            { postedJobIds : job._id },
+            { new : true }
+        )
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    if(userProfile) {
+        res.status(201).json({'id' : job._id});
+    } else {
+        res.status(400).json({'error' : 'Internal server error'});
+    }
 }
 
 const getJobById = async (req, res, next) => {
@@ -171,8 +190,26 @@ const applyForJob = async (req, res, next) => {
         return next(createHttpError(err instanceof Error ? err.message : 'Database Error'));
     }
 
+    //Adding the jobId to userProfile's AppliedJobIds
+
     if(result) {
-        res.status(201).json({'message':'Applied Successfully'});
+
+        let userProfile;
+
+        try {
+            userProfile = await userProfileModel.findOneAndUpdate(
+                { name },
+                { AppliedJobIds : jobId },
+                { new : true }
+            );
+        } catch (err) {
+            return next(createHttpError(err instanceof Error ? err.message : 'Database Error'))
+        }
+
+        if(userProfile) {
+            res.status(201).json({'message':'Applied Successfully'});
+        }
+
     } else {
         res.status(500).json({"message" : "Internal Server Error"});
     }
@@ -185,13 +222,38 @@ const deleteJob = async (req, res, next) => {
         return next(createHttpError(401,'Job Id required'));
     }
 
+    //Finding the name of user from Auth
+
+    let user;
+
     try {
+        user = await userModel.findOne({ _id : req.userId });
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    let userProfile
+
+    try {
+        userProfile = await userProfileModel.findOneAndDelete({ name : user.Username },
+            { postedJobIds : jobId },
+            { new : true }
+        )
+    } catch (err) {
+        return next(createHttpError(400,err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    if(userProfile) {
+        try {
         await jobModel.deleteOne({ _id : jobId });
     } catch (err) {
         return next(createHttpError(400, err instanceof Error ? err.message : 'Database problem'));
     }
 
     res.status(200).json({'message':'Job deleted successfully'});
+    } else {
+        res.status(500).json({'error' : 'internal server error'});
+    }
 }
 
 export { getAllJobs, postJob, getJobById ,applyForJob, deleteJob}

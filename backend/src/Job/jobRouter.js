@@ -28,6 +28,6 @@ jobRouter.get('/get/:jobId', getJobById);
 
 jobRouter.get('/apply/:jobId', Auth, applyForJob);
 
-jobRouter.delete('/delete/:jobId' , deleteJob);
+jobRouter.delete('/delete/:jobId' , Auth, deleteJob);
 
 export default jobRouter;
