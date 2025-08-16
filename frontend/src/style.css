@@ -1,0 +1,129 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #143d8c;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.navbar .logo {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.navbar ul {
+  display: flex;
+  list-style: none;
+}
+
+.navbar ul li {
+  margin-left: 20px;
+}
+
+.navbar ul li a,
+.navbar ul li button {
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.navbar ul li a:hover,
+.navbar ul li button:hover {
+  text-decoration: underline;
+}
+
+/* Login Page */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f7f9fc;
+  padding-top: 60px; /* keeps it below navbar */
+}
+
+.login-box {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+  width: 350px;
+  text-align: center;
+}
+
+.login-box h2 {
+  margin-bottom: 20px;
+  color: #143d8c;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.login-box button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: #143d8c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.login-box button:hover {
+  background: #0f2f6b;
+}
+
+.login-box a {
+  display: block;
+  margin-top: 15px;
+  color: #143d8c;
+  font-weight: 500;
+  text-decoration: none;
+}
+.login-box a:hover {
+  text-decoration: underline;
+}
+
+.google-btn {
+  display: inline-block;
+  margin-top: 10px;
+  background: #db4437;
+  color: white !important;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+.google-btn:hover {
+  background: #b7352a;
+}
+
+/* Push content down so it’s not hidden behind fixed navbar */
+.main-content {
+  margin-top: 80px; /* adjust to navbar height */
+  padding: 20px;
+}
