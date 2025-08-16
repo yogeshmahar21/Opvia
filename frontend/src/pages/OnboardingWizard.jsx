@@ -1,31 +1,78 @@
-import { useState } from "react";
-import { api } from "../api/client";
+// src/pages/OnboardingWizard.jsx
+import React, { useState } from "react";
+import api from "../api";
+import AvatarUploader from "../components/AvatarUploader";
+import Button from "../components/Button";
+import Input from "../components/Input";
 
 export default function OnboardingWizard() {
-  const token = localStorage.getItem("token");
-  const [step,setStep]=useState(1);
-  const [data,setData]=useState({ profilePic:"", skills:[], experience:[], education:[] });
+  const [step, setStep] = useState(1);
+  const [profilePic, setProfilePic] = useState(null);
+  const [about, setAbout] = useState("");
+  const [skills, setSkills] = useState("");
+  const [experience, setExperience] = useState("");
+  const [education, setEducation] = useState("");
 
-  const next=()=>setStep(s=>s+1); const back=()=>setStep(s=>Math.max(1,s-1));
-  const save=async()=>{ await api(token).post(`/api/users/${"me"}/settings`, { /* optional */ });
-    await api(token).post(`/api/users/${"me"}`, data, "PUT");
-    alert("Onboarding complete");
+  const next = () => setStep((s) => s + 1);
+  const back = () => setStep((s) => s - 1);
+
+  const finish = async () => {
+    // NOTE: if you support file upload, switch this to FormData
+    try {
+      await api.put("/api/users/me", {
+        about,
+        skills: skills.split(",").map((s) => s.trim()).filter(Boolean),
+        experience,
+        education,
+        // profilePic: <upload first, then save URL>
+      });
+      window.location.href = "/dashboard";
+    } catch {
+      alert("Failed to save onboarding");
+    }
   };
 
-  return (<div>
-    <h2>Onboarding</h2>
-    {step===1 && (<div>
-      <input placeholder="Profile Pic URL" value={data.profilePic} onChange={e=>setData({...data, profilePic:e.target.value})}/>
-      <button onClick={next}>Next</button>
-    </div>)}
-    {step===2 && (<div>
-      <input placeholder="Add skill and press Enter" onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault(); setData({...data, skills:[...data.skills, e.currentTarget.value]}); e.currentTarget.value="";}}}/>
-      <p>{data.skills.join(", ")}</p>
-      <button onClick={back}>Back</button><button onClick={next}>Next</button>
-    </div>)}
-    {step===3 && (<div>
-      <textarea placeholder="Experience JSON (quick demo)" onChange={e=>setData({...data, experience:JSON.parse(e.target.value||"[]")})}/>
-      <button onClick={back}>Back</button><button onClick={save}>Finish</button>
-    </div>)}
-  </div>);
+  return (
+    <div>
+      <h2>Onboarding</h2>
+      {step === 1 && (
+        <div>
+          <h3>Upload Photo</h3>
+          <AvatarUploader onFileSelected={setProfilePic} />
+          <Button onClick={next}>Next</Button>
+        </div>
+      )}
+      {step === 2 && (
+        <div>
+          <h3>About & Skills</h3>
+          <textarea placeholder="About you" value={about} onChange={(e) => setAbout(e.target.value)} />
+          <Input placeholder="Skills (comma separated)" value={skills} onChange={(e) => setSkills(e.target.value)} />
+          <div>
+            <Button onClick={back}>Back</Button>{" "}
+            <Button onClick={next}>Next</Button>
+          </div>
+        </div>
+      )}
+      {step === 3 && (
+        <div>
+          <h3>Experience</h3>
+          <textarea placeholder="Work experience" value={experience} onChange={(e) => setExperience(e.target.value)} />
+          <div>
+            <Button onClick={back}>Back</Button>{" "}
+            <Button onClick={next}>Next</Button>
+          </div>
+        </div>
+      )}
+      {step === 4 && (
+        <div>
+          <h3>Education</h3>
+          <textarea placeholder="Education" value={education} onChange={(e) => setEducation(e.target.value)} />
+          <div>
+            <Button onClick={back}>Back</Button>{" "}
+            <Button onClick={finish}>Finish</Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

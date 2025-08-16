@@ -1,17 +1,47 @@
-import { useEffect, useState } from "react";
-import { api } from "../api/client";
+// src/pages/EditProfile.jsx
+import React, { useEffect, useState } from "react";
+import api from "../api";
+import Button from "../components/Button";
+import Input from "../components/Input";
 
 export default function EditProfile() {
-  const token = localStorage.getItem("token");
-  const [me,setMe]=useState({ Username:"", about:"", profilePic:"", skills:[] });
+  const [form, setForm] = useState({
+    name: "",
+    about: "",
+    skills: "",
+  });
 
-  useEffect(()=>{ /* fetch me if you have a /me endpoint, else store user in app state */ },[]);
-  const save=async()=>{ await api(token).post(`/api/users/${"me"}`, me, "PUT"); alert("Saved"); };
+  useEffect(() => {
+    (async () => {
+      const { data } = await api.get("/api/profile");
+      setForm({
+        name: data.name || "",
+        about: data.about || "",
+        skills: (data.skills || []).join(", "),
+      });
+    })();
+  }, []);
 
-  return (<div>
-    <input value={me.Username} onChange={e=>setMe({...me, Username:e.target.value})}/>
-    <input value={me.profilePic} onChange={e=>setMe({...me, profilePic:e.target.value})} placeholder="Profile image URL"/>
-    <textarea value={me.about} onChange={e=>setMe({...me, about:e.target.value})}/>
-    <button onClick={save}>Save</button>
-  </div>);
+  const save = async () => {
+    try {
+      await api.put("/api/users/me", {
+        name: form.name,
+        about: form.about,
+        skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
+      });
+      window.location.href = "/profile";
+    } catch {
+      alert("Update failed");
+    }
+  };
+
+  return (
+    <div>
+      <h2>Edit Profile</h2>
+      <Input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+      <textarea placeholder="About" value={form.about} onChange={(e) => setForm({ ...form, about: e.target.value })} />
+      <Input placeholder="Skills (comma separated)" value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} />
+      <Button onClick={save}>Save</Button>
+    </div>
+  );
 }
