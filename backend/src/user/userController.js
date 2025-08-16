@@ -189,4 +189,8 @@ const updateUserById = async (req, res, next) => {
     }
 };
 
-export { createUser, login, getUserById, updateUserById }
+const getProfile = (req, res) => {
+    res.json({ message: "This is a protected route", user: req.user });
+}
+
+export { createUser, login, getUserById, updateUserById, getProfile }

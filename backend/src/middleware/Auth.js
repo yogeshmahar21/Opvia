@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
-import config from '../config/config.js'
+import { config } from '../config/config.js'
 import createHttpError from "http-errors"
 
 const Auth = (req, res, next) => {
-    const { authHeader } = req.headers['authorization'];
+    const authHeader = req.headers['authorization'];
 
-    if (typeof token == 'string') {
+    if (authHeader) {
         const Token = authHeader.split(' ')[1];
 
         const decoded = jwt.verify(Token, config.secret );
