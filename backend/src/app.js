@@ -8,6 +8,7 @@ import postRouter from './post/postRouter.js';
 import jobRouter from './Job/jobRouter.js';
 import chatRouter from './chat/chatRouter.js';
 import { config } from './config/config.js';
+import userProfileRouter from './userProfile/userProfileRouter.js';
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRouter);
 app.use('/api/posts', postRouter);
 app.use('/api/jobs', jobRouter);
+app.use('/api/users/profile', userProfileRouter);
 
 // --- Global Error Handler ---
 app.use(globalErrorHandler);
