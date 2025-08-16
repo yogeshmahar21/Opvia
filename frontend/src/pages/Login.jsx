@@ -1,18 +1,37 @@
-import { useState } from "react";
-import { api } from "../api/client";
+// src/pages/Login.jsx
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../api";
+import Input from "../components/Input";
+import Button from "../components/Button";
+import { AuthContext } from "../App";
 
-export default function Login({ onAuthed }) {
-  const [email,setEmail]=useState(""); const [password,setPassword]=useState(""); const [err,setErr]=useState("");
-  const submit=async(e)=>{e.preventDefault();
-    const res = await api().post("/auth/login", { email, password });
-    if(res.token){ localStorage.setItem("token", res.token); onAuthed?.(res); } else setErr(res.message||"Login failed");
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const { refresh } = useContext(AuthContext);
+
+  const submit = async () => {
+    try {
+      const { data } = await api.post("/api/login", { email, password });
+      localStorage.setItem("token", data.token);
+      await refresh();
+      navigate("/feed");
+    } catch (e) {
+      alert("Login failed");
+    }
   };
-  return (<form onSubmit={submit}>
-    <h2>Login</h2>
-    {err && <p style={{color:"red"}}>{err}</p>}
-    <input placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}/>
-    <input placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)}/>
-    <button>Login</button>
-    <a href="/auth/google">Login with Google</a>
-  </form>);
+
+  return (
+    <div>
+      <h2>Login</h2>
+      <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <Button onClick={submit}>Login</Button>
+      <div>
+        <a href="http://localhost:5000/auth/google">Login with Google</a>
+      </div>
+    </div>
+  );
 }

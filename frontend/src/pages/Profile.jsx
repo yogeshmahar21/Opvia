@@ -1,14 +1,29 @@
-import { useEffect, useState } from "react";
-import { api } from "../api/client";
+// src/pages/Profile.jsx
+import React, { useEffect, useState } from "react";
+import api from "../api";
 
-export default function Profile({ userId }) {
-  const [profile,setProfile]=useState(null);
-  useEffect(()=>{ api().get(`/api/users/${userId}`).then(setProfile); },[userId]);
-  if(!profile) return <p>Loading...</p>;
-  return (<div>
-    <img alt="" src={profile.profilePic} width={80}/>
-    <h2>{profile.Username}</h2>
-    <p>{profile.about}</p>
-    <p>Skills: {profile.skills?.join(", ")}</p>
-  </div>);
+export default function Profile() {
+  const [me, setMe] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await api.get("/api/profile");
+      setMe(data);
+    })();
+  }, []);
+
+  if (!me) return <div>Loading…</div>;
+
+  return (
+    <div>
+      <h2>My Profile</h2>
+      {me.profilePic && <img src={me.profilePic} alt="" width={96} height={96} />}
+      <div>Name: {me.name}</div>
+      <div>Email: {me.email}</div>
+      <div>Role: {me.role}</div>
+      <div>About: {me.about}</div>
+      <div>Skills: {(me.skills || []).join(", ")}</div>
+      <a href="/edit-profile">Edit Profile</a>
+    </div>
+  );
 }

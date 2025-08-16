@@ -1,24 +1,32 @@
-import { useState } from "react";
-import { api } from "../api/client";
+// src/pages/SignUp.jsx
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../api";
+import Input from "../components/Input";
+import Button from "../components/Button";
 
-export default function Signup({ onAuthed }) {
-  const [name,setName]=useState(""); const [email,setEmail]=useState(""); const [password,setPassword]=useState("");
-  const [role,setRole]=useState("user"); const [err,setErr]=useState("");
-  const submit=async(e)=>{e.preventDefault();
-    const res = await api().post("/auth/signup", { name, email, password, role });
-    if(res.token){ localStorage.setItem("token", res.token); onAuthed?.(res); } else setErr(res.message||"Signup failed");
+export default function SignUp() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const submit = async () => {
+    try {
+      await api.post("/api/register", { name, email, password });
+      navigate("/login");
+    } catch {
+      alert("Registration failed");
+    }
   };
-  return (<form onSubmit={submit}>
-    <h2>Signup</h2>
-    {err && <p style={{color:"red"}}>{err}</p>}
-    <input placeholder="Name" value={name} onChange={e=>setName(e.target.value)}/>
-    <input placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}/>
-    <input placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)}/>
-    <select value={role} onChange={e=>setRole(e.target.value)}>
-      <option value="user">User</option>
-      <option value="jobseeker">Job Seeker</option>
-      <option value="recruiter">Recruiter</option>
-    </select>
-    <button>Create Account</button>
-  </form>);
+
+  return (
+    <div>
+      <h2>Sign Up</h2>
+      <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+      <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <Button onClick={submit}>Create account</Button>
+    </div>
+  );
 }

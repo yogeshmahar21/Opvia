@@ -1,94 +1,137 @@
+// src/pages/ChatWindow.jsx
 import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
+import api from "../api";
+import socket from "../socket"; // ✅ import socket instance
 
-const ChatWindow = ({ chatId, currentUser }) => {
+export default function ChatWindow() {
+  const [chats, setChats] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [messageInput, setMessageInput] = useState("");
-  const messagesEndRef = useRef(null);
+  const [msg, setMsg] = useState("");
+  const endRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Load chats list
+  const loadChats = async () => {
+    try {
+      const { data } = await api.get("/api/chat");
+      setChats(data);
+      if (!activeChatId && data[0]?._id) {
+        setActiveChatId(data[0]._id);
+      }
+    } catch (err) {
+      console.error("Error loading chats:", err);
+    }
   };
 
-  const fetchMessages = async () => {
+  // Load history messages
+  const loadMessages = async (chatId) => {
+    if (!chatId) return;
     try {
-      const res = await axios.get(`/api/chat/${chatId}/messages`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+      const { data } = await api.get(`/api/chat/${chatId}/messages`);
+      setMessages(data);
+      endRef.current?.scrollIntoView({ behavior: "smooth" });
+    } catch (err) {
+      console.error("Error loading messages:", err);
+    }
+  };
+
+  // Send new message
+  const send = async () => {
+    if (!msg.trim() || !activeChatId) return;
+    try {
+      // 1. Save to DB via API
+      const { data } = await api.post(`/api/chat/${activeChatId}/messages`, {
+        text: msg.trim(),
       });
-      setMessages(res.data);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
+
+      // 2. Emit real-time message
+      socket.emit("sendMessage", { chatId: activeChatId, ...data });
+
+      // 3. Update UI immediately
+      setMessages((m) => [...m, data]);
+      setMsg("");
+      endRef.current?.scrollIntoView({ behavior: "smooth" });
+    } catch (err) {
+      console.error("Error sending message:", err);
     }
   };
 
-  const sendMessage = async () => {
-    if (!messageInput.trim()) return;
+  // Initial load of chats
+  useEffect(() => {
+    loadChats();
+  }, []);
 
-    try {
-      const res = await axios.post(
-        `/api/chat/${chatId}/messages`,
-        { text: messageInput },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+  // Reload messages when chat changes
+  useEffect(() => {
+    if (activeChatId) {
+      loadMessages(activeChatId);
+
+      // Join socket room for this chat
+      socket.emit("joinChat", activeChatId);
+
+      // Listen for new messages in this chat
+      socket.on("receiveMessage", (message) => {
+        if (message.chatId === activeChatId) {
+          setMessages((prev) => [...prev, message]);
+          endRef.current?.scrollIntoView({ behavior: "smooth" });
         }
-      );
-      setMessages((prev) => [...prev, res.data]);
-      setMessageInput("");
-      scrollToBottom();
-    } catch (error) {
-      console.error("Error sending message:", error);
-    }
-  };
+      });
 
-  useEffect(() => {
-    if (chatId) {
-      fetchMessages();
+      // Cleanup listener when chat changes
+      return () => {
+        socket.emit("leaveChat", activeChatId);
+        socket.off("receiveMessage");
+      };
     }
-  }, [chatId]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  }, [activeChatId]);
 
   return (
-    <div className="chat-container">
-      <div className="chat-header">
-        <h3>Chat Room</h3>
-      </div>
+    <div>
+      <h2>Messages</h2>
 
-      <div className="chat-messages">
-        {messages.map((msg) => (
-          <div
-            key={msg._id}
-            className={
-              msg.senderId === currentUser._id ? "message sent" : "message received"
-            }
-          >
-            <span>{msg.text}</span>
-            <div className="timestamp">
-              {new Date(msg.timestamp).toLocaleTimeString()}
-            </div>
+      <div style={{ display: "flex", gap: 16 }}>
+        {/* Chat list */}
+        <div>
+          <h3>Your Chats</h3>
+          <ul>
+            {chats.map((c) => (
+              <li key={c._id}>
+                <button onClick={() => setActiveChatId(c._id)}>
+                  Chat #{c._id.slice(-5)} —{" "}
+                  {c.participants?.map((p) => p.name).join(", ")}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Chat window */}
+        <div style={{ flex: 1 }}>
+          <div>
+            {(messages || []).map((m) => (
+              <div key={m._id}>
+                <div>
+                  <strong>{m.sender?.name || m.senderId}</strong>
+                </div>
+                <div>{m.text}</div>
+                <small>{new Date(m.timestamp).toLocaleString()}</small>
+                <hr />
+              </div>
+            ))}
+            <div ref={endRef} />
           </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
 
-      <div className="chat-input">
-        <input
-          type="text"
-          placeholder="Type a message..."
-          value={messageInput}
-          onChange={(e) => setMessageInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-        />
-        <button onClick={sendMessage}>Send</button>
+          <div>
+            <input
+              placeholder="Type a message…"
+              value={msg}
+              onChange={(e) => setMsg(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && send()}
+            />
+            <button onClick={send}>Send</button>
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-
-export default ChatWindow;
+}
