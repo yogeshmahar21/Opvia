@@ -151,8 +151,15 @@ const login = async(req, res, next) => {
 }
 
 const getUserById = async(req, res, next) => {
+
+    const { id } = req.params;
+
+    if(!id) {
+        return next(createHttpError(401, 'User Id required'));
+    }
+
    try {
-        const user = await userModel.findById(req.params.id);
+        const user = await userModel.findById(id);
 
         if (!user) {
             return next(createHttpError(404, 'User not found'));
@@ -167,6 +174,10 @@ const getUserById = async(req, res, next) => {
 const updateUserById = async (req, res, next) => {
     try {
         const updateData = { ...req.body };
+
+        if(!updateData) {
+            return next(createHttpError(400,'All fields required'));
+        }
 
         if (updateData.password) {
             updateData.password = await bcrypt.hash(updateData.password, 10);
@@ -189,8 +200,4 @@ const updateUserById = async (req, res, next) => {
     }
 };
 
-const getProfile = (req, res) => {
-    res.json({ message: "This is a protected route", user: req.user });
-}
-
-export { createUser, login, getUserById, updateUserById, getProfile }
+export { createUser, login, getUserById, updateUserById }
