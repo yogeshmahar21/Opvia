@@ -177,6 +177,12 @@ const applyForJob = async (req, res, next) => {
 
     const peopleAppliedArray = job.peopleApplied;
 
+    //check if user has already applied for the job
+
+    if(peopleAppliedArray.includes(name)) {
+        return next(createHttpError(400,'You already applied for the job'));
+    }
+
     peopleAppliedArray.push(name);
 
     let result;

@@ -12,22 +12,11 @@ const __dirname = path.dirname(__filename);
 
 const post = async (req, res, next) => {
     const { description } = req.body;
+    const { userId } = req.params;
 
-    //Getting the name from Auth
-
-    let user;
-
-    try {
-        user = await userModel.findOne({ _id : req.userId });
-    } catch (err) {
-        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    if(!userId) {
+        return next(createHttpError(401, 'user Id required'));
     }
-
-    if(!user){
-        return next(createHttpError(401,'Unauthorized'));
-    } 
-
-    const name = user.Username;
 
     //Jumping directly to uploading files
 
@@ -58,6 +47,24 @@ const post = async (req, res, next) => {
         return next(createHttpError(400, err instanceof Error ? err.message : 'Unable to upload to cloud'));
     }
 
+    //creating the comment Id for the post
+
+    // let comment;
+
+    // try {
+    //     comment = await commentsModel.create({
+    //         from : '',
+    //         to : userId,
+    //         message : []
+    //     })
+    // } catch (err) {
+    //     return next(createHttpError(400, err instanceof Error ? err.message : 'failed to create comment Id'));
+    // }
+
+    // if(!comment) {
+    //     return next(createHttpError(500, 'Internal Server Error'));
+    // }
+
     //creating the post
 
     let post;
@@ -65,8 +72,10 @@ const post = async (req, res, next) => {
     try {
         post = await postModel.create({
             postImg : uploadResult.secure_url,
-            name,
-            description : description ? description : ''
+            userId,
+            description : description ? description : '',
+            commentIds : [],
+            like : 0
         })
     } catch (err) {
         return next(createHttpError(400, err instanceof Error ? err.message : 'Unable to create Post'));
@@ -77,7 +86,7 @@ const post = async (req, res, next) => {
     let userProfile;
 
     try {
-        userProfile = await userProfileModel.findOne({ name });
+        userProfile = await userProfileModel.findOne({ _id : userId });
     } catch (err) {
         return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
     }
@@ -93,7 +102,7 @@ const post = async (req, res, next) => {
     let newUserProfile;
 
     try {
-        newUserProfile = await userProfileModel.findOneAndUpdate({ name },
+        newUserProfile = await userProfileModel.findOneAndUpdate({ _id : userId },
             { postIds : postsList }
         );
     } catch (err) {
@@ -203,4 +212,39 @@ const deletePost = async (req, res, next) => {
     }
 }
 
-export { post, getPostById, deletePost }
+const likePost = async (req, res, next) => {
+    const { postId } = req.params;
+
+    if(!postId) {
+        return next(createHttpError(400, 'post id required'));
+    }
+
+    let post;
+
+    try {
+        post = await postModel.findOne({ _id : postId });
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Failed to fetch post'));
+    }
+
+    const likes = post.like + 1;
+
+    let updatedPost;
+
+    try {
+        updatedPost = await postModel.findOneAndUpdate({ _id : postId },
+            { like : likes },
+            { new : true }
+        );
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Failed to update like on the post'));
+    }
+
+    if(updatedPost){
+        res.status(200).json({'message' : 'liked post successfully'});
+    } else { 
+        res.status(500).json({'error':'Internal Server Error'});
+    }
+}
+
+export { post, getPostById, deletePost, likePost }

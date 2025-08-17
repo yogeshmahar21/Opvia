@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const postSchema = new mongoose.Schema({
-    name: {
+    userId: {
         type: String,
     },
     description : {
@@ -10,6 +10,12 @@ const postSchema = new mongoose.Schema({
     postImg: {
         type: String,
         required: true,
+    },
+    commentIds : {
+        type : [String],
+    },
+    like : {
+        type : Number,
     }
 }, { timestamps : true })
 
