@@ -13,6 +13,18 @@ const createUser = async (req, res, next) => {
         return next(createHttpError(401,'All fields required'));
     }
 
+    //Ensuring the name should be unique
+
+    try {
+        const userName = await userModel.findOne({ Username : name });
+
+        if(userName){
+            return next(createHttpError(400,'username already exists'));
+        }
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'failed to fetch username'));
+    }
+
     //Validation
 
     const userSchema = Joi.object({
