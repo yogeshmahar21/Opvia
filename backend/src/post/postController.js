@@ -107,4 +107,100 @@ const post = async (req, res, next) => {
     }
 }
 
-export { post }
+const getPostById = async (req, res, next) => {
+    const { postId } = req.params;
+
+    if(!postId) {
+        return next(createHttpError(400,'Post Id required'));
+    }
+
+    //fetching the post
+
+    let post;
+
+    try {
+        post = await postModel.findOne({ _id : postId });
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    if(!post) {
+        return next(401, 'post Not found');
+    }
+
+    res.status(200).json({'post' : post});
+}
+
+const deletePost = async (req, res, next) => {
+    const { postId } = req.params;
+
+    if(!postId) {
+        return next(createHttpError(400,'post Id required'));
+    } 
+
+    //Getting the name from Auth
+
+    let user;
+
+    try {
+        user = await userModel.findOne({ _id : req.userId });
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    if(!user) {
+        return next(createHttpError(401, 'Unauthorized'));
+    }
+
+    const name = user.Username;
+
+    let userProfile;
+
+    try {
+        userProfile = await userProfileModel.findOne({ name });
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    if(!userProfile) {
+        return next(createHttpError(400,'user Profile not found'));
+    }
+
+    //geting the array of postIds in userProfile
+
+    const postIdList = userProfile.postIds;
+
+    const newPostIdList = postIdList.filter(id => id!== postId);
+
+    //updating the new postId List 
+
+    let updatedUserProfile;
+
+    try {
+        updatedUserProfile = await userProfileModel.findOneAndUpdate(
+            { name },
+            { postIds : newPostIdList },
+            { new : true }
+        );
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    //Deleting the post from postModel
+
+    let DeletePost;
+
+    try {
+        DeletePost = await postModel.deleteOne({ _id : postId });
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    if(updatedUserProfile && DeletePost) {
+        res.status(200).json({'message' : 'Post deleted successfully'});
+    } else {
+        res.status(200).json({'error' : "Internal server error"});
+    }
+}
+
+export { post, getPostById, deletePost }
