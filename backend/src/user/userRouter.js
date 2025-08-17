@@ -10,7 +10,7 @@ import {
 
 const userRouter = express.Router();
 
-userRouter.post("/createUser", createUser);
+userRouter.post("/register", createUser);
 
 userRouter.get("/profile", verifyJWT, getProfile);
 

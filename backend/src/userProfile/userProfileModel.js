@@ -19,6 +19,9 @@ const userProfileSchema = new mongoose.Schema({
     connectionIds : {
         type : [String],
     },
+    connectionReqIds : {
+        type : [String],
+    },
     AppliedJobIds : {
         type: [String],
     },

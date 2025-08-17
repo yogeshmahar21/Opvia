@@ -1,5 +1,5 @@
 import express from 'express';
-import { connection, createProfile, updateSkills, updateStatus } from './userProfileController.js';
+import { connection, createProfile, getProfile, sendConnectionRequest, updateSkills, updateStatus } from './userProfileController.js';
 import multer from 'multer';
 import path from 'node:path';   
 import { fileURLToPath } from 'node:url';
@@ -17,9 +17,13 @@ const upload = multer({
 
 userProfileRouter.post('/:name', upload.fields([{name: 'ProfileImg', maxCount: 1}]), createProfile);
 
+userProfileRouter.get('/:profileId', getProfile);
+
 userProfileRouter.post('/updateSkills/:profileId', updateSkills);
 
 userProfileRouter.post('/update/status/:profileId', updateStatus);
+
+userProfileRouter.post('/request/connection/:Id', sendConnectionRequest);
 
 userProfileRouter.post('/connection/:profileId', connection);
 

@@ -90,6 +90,30 @@ const createProfile = async (req, res, next) => {
 
 }
 
+const getProfile = async (req, res, next) => {
+
+    const { profileId } = req.params;
+
+    if(!profileId) {
+        return next(createHttpError(400, 'profile id required'));
+    }
+
+    let profile;
+
+    try {
+        profile = await userProfileModel.findOne({ _id : profileId });
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Failed to get user profile'));
+    }
+
+    if(profile) {
+        res.status(200).json({profile});
+    } else {
+        return next(createHttpError(400, 'No profile found'));
+    }
+
+}
+
 const updateSkills = async(req, res, next) => {
     const { skills } = req.body;
 
@@ -166,6 +190,51 @@ const updateStatus = async(req, res, next) => {
 
 }
 
+const sendConnectionRequest = async(req, res, next) =>{
+    const { Id } = req.params; //Sender's Id
+    const { profileId } = req.body; //Reciever's Id
+
+    if(!Id, !profileId) {
+        return next(createHttpError(400, 'All fields required'));
+    }
+
+    // Add sender's userProfile Id to Reciever's connectionReqIds
+
+    let reciever;
+
+    try {
+        reciever = await userProfileModel.findOne({ _id : profileId });
+    } catch (err) {
+        return next(createHttpError(400,err instanceof Error ? err.message : 'Database error'));
+    }
+
+    //Get connectionReqIds Array 
+
+    const connectionReqList = reciever.connectionReqIds;
+
+    connectionReqList.push(Id);
+
+    //Updating the sender userProfile
+
+    let updatedUserProfile;
+
+    try {
+        updatedUserProfile = await userProfileModel.findOneAndUpdate(
+            { _id : profileId },
+            { connectionReqIds : connectionReqList },
+            { new : true }
+        );
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+    if(updatedUserProfile) {
+        res.status(201).json({'message' : 'Connection request sent'});
+    } else {
+        res.status(500).json({'error' : 'internal server error'});
+    }
+}
+
 const connection = async(req, res, next) => {
     const { id } = req.body; //Sender's Id
     const { profileId } = req.params; //Reciever's Id
@@ -184,9 +253,15 @@ const connection = async(req, res, next) => {
         return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
     }
 
-    //Adding reciever to sender's connectionIds
+    //Checking if the sender is already a connection
 
     const senderFriendList = sender.connectionIds;
+
+    if(senderFriendList.includes(profileId)) {
+        return next(createHttpError(400,'User is already a connection'));
+    }
+
+    //Adding reciever to sender's connectionIds
 
     senderFriendList.push(profileId.toString());
 
@@ -214,18 +289,37 @@ const connection = async(req, res, next) => {
         return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
     }
 
+    //Checking if the reciever is already a connection
+
+    const recieverFriendList = reciever.connectionIds;
+
+    if(recieverFriendList.includes(id)) {
+        return next(createHttpError(400,'User is already a connection'));
+    }
+
+
+    //Getting and updating connectionIds Array
+
     const recieverConnectionList = reciever.connectionIds;
 
     recieverConnectionList.push(id.toString());
 
-    //updating reciever connecionIds
+    //Getting and updating connectionReqIds Array
+
+    const recieverConnectionReqList = reciever.connectionReqIds;
+
+    const updatedList = recieverConnectionReqList.filter( ReqId => ReqId !== id );
+
+    //updating reciever connecionIds and connectionReqIds
 
     let updatedReciever;
 
     try {
         updatedReciever = await userProfileModel.findOneAndUpdate(
             { _id : profileId },
-            { connectionIds : recieverConnectionList },
+            { connectionIds : recieverConnectionList,
+              connectionReqIds : updatedList  
+             },
             { new: true }
         )
     } catch (err) {
@@ -238,4 +332,4 @@ const connection = async(req, res, next) => {
 
 }
 
-export { createProfile, updateSkills, updateStatus, connection };
+export { createProfile, getProfile, updateSkills, updateStatus, sendConnectionRequest , connection };
