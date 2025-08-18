@@ -1,29 +1,34 @@
-// src/components/Navbar.jsx
-import React from "react";
-import { Link } from "react-router-dom";
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { BsBellFill, BsFillChatDotsFill } from 'react-icons/bs';
+import { FaUserCircle } from 'react-icons/fa';
 
-export default function Navbar({ user, onLogout }) {
+const Navbar = ({ token }) => {
+  const authLinks = (
+    <ul>
+      <li><NavLink to="/dashboard">Dashboard</NavLink></li>
+      <li><NavLink to="/feed">Feed</NavLink></li>
+      <li><NavLink to="/connections">Connections</NavLink></li>
+      <li><NavLink to="/jobs">Jobs</NavLink></li>
+      <li><NavLink to="/notifications"><BsBellFill /></NavLink></li>
+      <li><NavLink to="/chat"><BsFillChatDotsFill /></NavLink></li>
+      <li><NavLink to="/profile"><FaUserCircle /></NavLink></li>
+    </ul>
+  );
+
+  const guestLinks = (
+    <ul>
+      <li><NavLink to="/login">Login</NavLink></li>
+      <li><NavLink to="/signup">Sign Up</NavLink></li>
+    </ul>
+  );
+
   return (
     <nav className="navbar">
       <div className="logo">Opvia</div>
-      <ul>
-        <li><Link to="/">Home</Link></li>
-        <li><Link to="/feed">Feed</Link></li>
-        <li><Link to="/jobs">Jobs</Link></li>
-        <li><Link to="/connections">Connections</Link></li>
-        <li><Link to="/chat">Chat</Link></li>
-        {user ? (
-          <>
-            <li><Link to="/profile">Profile</Link></li>
-            <li><button onClick={onLogout} className="logout-btn">Logout</button></li>
-          </>
-        ) : (
-          <>
-            <li><Link to="/login">Login</Link></li>
-            <li><Link to="/signup">Sign Up</Link></li>
-          </>
-        )}
-      </ul>
+      {token ? authLinks : guestLinks}
     </nav>
   );
-}
+};
+
+export default Navbar;

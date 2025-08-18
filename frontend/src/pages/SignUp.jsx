@@ -1,32 +1,51 @@
-// src/pages/SignUp.jsx
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "../api";
-import Input from "../components/Input";
-import Button from "../components/Button";
-
 export default function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const submit = async () => {
+  const submit = async (e) => {
+    e.preventDefault();
     try {
-      await api.post("/api/register", { name, email, password });
+      await api.post("/api/users/register", { name, email, password });
+      alert("Registration successful! Please log in.");
       navigate("/login");
-    } catch {
-      alert("Registration failed");
+    } catch (err) {
+      console.error("Registration Error:", err.response ? err.response.data : err.message);
+      const errorMessage = err.response?.data?.message || "Registration failed. Please check your connection.";
+      alert(errorMessage);
     }
   };
 
   return (
-    <div>
-      <h2>Sign Up</h2>
-      <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-      <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-      <Button onClick={submit}>Create account</Button>
+    <div className="auth-container">
+      <div className="auth-box">
+        <h2>Sign Up</h2>
+        <form onSubmit={submit}>
+          <Input 
+            placeholder="Name" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            required 
+          />
+          <Input 
+            placeholder="Email" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            type="email" 
+            required 
+          />
+          <Input 
+            type="password" 
+            placeholder="Password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+          />
+          <Button type="submit">Create account</Button>
+        </form>
+        <Link to="/login">Already have an account? Log in</Link>
+      </div>
     </div>
   );
 }

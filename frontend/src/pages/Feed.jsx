@@ -9,8 +9,12 @@ export default function Feed() {
   const [composer, setComposer] = useState("");
 
   const load = async () => {
-    const { data } = await api.get("/api/posts/feed");
-    setPosts(data);
+    try {
+      const { data } = await api.get("/api/posts/feed");
+      setPosts(data);
+    } catch (err) {
+      console.error("Error loading feed:", err);
+    }
   };
 
   useEffect(() => {
@@ -19,31 +23,33 @@ export default function Feed() {
 
   const createPost = async () => {
     if (!composer.trim()) return;
-    const { data } = await api.post("/api/posts", { content: composer });
-    setComposer("");
-    setPosts((p) => [data, ...p]);
-  };
-
-  const like = async (postId) => {
-    const { data } = await api.post(`/api/posts/${postId}/like`);
-    setPosts((prev) => prev.map((p) => (p._id === postId ? data : p)));
-  };
-
-  const comment = async (postId, text) => {
-    const { data } = await api.post(`/api/posts/${postId}/comment`, { text });
-    setPosts((prev) => prev.map((p) => (p._id === postId ? data : p)));
+    try {
+      const { data } = await api.post("/api/posts", { content: composer });
+      setComposer("");
+      setPosts((p) => [data, ...p]);
+    } catch (err) {
+      console.error("Error creating post:", err);
+    }
   };
 
   return (
-    <div>
+    <div className="page-container">
       <h2>Home Feed</h2>
-      <div>
-        <textarea placeholder="Share something…" value={composer} onChange={(e) => setComposer(e.target.value)} />
+      <div className="composer-box">
+        <textarea
+          placeholder="Share something…"
+          value={composer}
+          onChange={(e) => setComposer(e.target.value)}
+        />
         <Button onClick={createPost}>Post</Button>
       </div>
-      {posts.map((post) => (
-        <PostCard key={post._id} post={post} onLike={like} onComment={comment} />
-      ))}
+      {posts.length === 0 ? (
+        <p>No posts yet.</p>
+      ) : (
+        posts.map((post) => (
+          <PostCard key={post._id} post={post} onLike={() => {}} onComment={() => {}} />
+        ))
+      )}
     </div>
   );
 }

@@ -1,132 +1,49 @@
-// src/App.jsx
-import React, { useEffect, useState, createContext } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import api from "./api";
-import "./style.css";
-
-// components
+// App.jsx
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
-
-// pages
-import Login from "./pages/Login";
-import SignUp from "./pages/SignUp";
-import OnboardingWizard from "./pages/OnboardingWizard";
-import Profile from "./pages/Profile";
-import EditProfile from "./pages/EditProfile";
 import Dashboard from "./pages/Dashboard";
 import Feed from "./pages/Feed";
-import Jobs from "./pages/Jobs";
-import JobDetails from "./pages/JobDetails";
-import PostJob from "./pages/PostJob";
 import Connections from "./pages/Connections";
-import Suggestions from "./pages/Suggestions";
-import UserProfileView from "./pages/UserProfileView";
-import Notifications from "./pages/Notifications";
-import Settings from "./pages/Settings";
+import Jobs from "./pages/Jobs";
 import ChatWindow from "./pages/ChatWindow";
+import Profile from "./pages/Profile";
+import Notifications from "./pages/Notifications";
+import EditProfile from "./pages/EditProfile";
 import CreatePost from "./pages/CreatePost";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
 
-export const AuthContext = createContext(null);
+const token = localStorage.getItem("token");
 
-const Protected = ({ children, user }) => {
-  if (!user) return <Navigate to="/login" replace />;
-  return children;
-};
-
-export default function App() {
-  const [user, setUser] = useState(null);
-
-  const loadMe = async () => {
-    try {
-      const { data } = await api.get("/api/profile"); // returns current user
-      setUser(data);
-    } catch {
-      setUser(null);
-    }
-  };
-
-  useEffect(() => {
-    loadMe();
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    window.location.href = "/login";
-  };
-
+function App() {
   return (
-    <AuthContext.Provider value={{ user, setUser, refresh: loadMe }}>
-      <Router>
-        <Navbar user={user} onLogout={handleLogout} /> {/* ✅ Navbar always visible */}
-        <div className="main-content"> {/* ✅ prevents overlap with fixed navbar */}
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
+    <>
+      <Navbar token={token} />
+      <Routes>
+        {token ? (
+          <>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/feed" element={<Feed />} />
+            <Route path="/connections" element={<Connections />} />
+            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/chat" element={<ChatWindow />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="*" element={<Navigate to="/dashboard" />} />
+          </>
+        ) : (
+          <>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route
-              path="/onboarding"
-              element={<Protected user={user}><OnboardingWizard /></Protected>}
-            />
-            <Route
-              path="/profile"
-              element={<Protected user={user}><Profile /></Protected>}
-            />
-            <Route
-              path="/edit-profile"
-              element={<Protected user={user}><EditProfile /></Protected>}
-            />
-            <Route
-              path="/dashboard"
-              element={<Protected user={user}><Dashboard /></Protected>}
-            />
-            <Route
-              path="/feed"
-              element={<Protected user={user}><Feed /></Protected>}
-            />
-            <Route
-              path="/create-post"
-              element={<Protected user={user}><CreatePost /></Protected>}
-            />
-            <Route
-              path="/jobs"
-              element={<Protected user={user}><Jobs /></Protected>}
-            />
-            <Route
-              path="/jobs/:id"
-              element={<Protected user={user}><JobDetails /></Protected>}
-            />
-            <Route
-              path="/post-job"
-              element={<Protected user={user}><PostJob /></Protected>}
-            />
-            <Route
-              path="/connections"
-              element={<Protected user={user}><Connections /></Protected>}
-            />
-            <Route
-              path="/suggestions"
-              element={<Protected user={user}><Suggestions /></Protected>}
-            />
-            <Route
-              path="/users/:id"
-              element={<Protected user={user}><UserProfileView /></Protected>}
-            />
-            <Route
-              path="/notifications"
-              element={<Protected user={user}><Notifications /></Protected>}
-            />
-            <Route
-              path="/settings"
-              element={<Protected user={user}><Settings /></Protected>}
-            />
-            <Route
-              path="/chat"
-              element={<Protected user={user}><ChatWindow /></Protected>}
-            />
-          </Routes>
-        </div>
-      </Router>
-    </AuthContext.Provider>
+            <Route path="*" element={<Navigate to="/login" />} />
+          </>
+        )}
+      </Routes>
+    </>
   );
 }
+
+export default App;
