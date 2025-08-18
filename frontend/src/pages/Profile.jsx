@@ -12,7 +12,7 @@ export default function Profile() {
     if (!profileId) return;
 
     try {
-      const { data } = await api.get(`/api/users/profile/id/${profileId}`);
+      const { data } = await api.get(`/api/users/${profileId}`);
       console.log("Fetched profile data:", data); // ✅ log this
       setMe(data);
     } catch (err) {

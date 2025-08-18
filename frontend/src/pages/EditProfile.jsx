@@ -9,28 +9,55 @@ export default function EditProfile() {
     name: "",
     about: "",
     skills: "",
+    status: "",
   });
 
+  const [profileId, setProfileId] = useState("");
+
   useEffect(() => {
-    (async () => {
-      const { data } = await api.get("/api/profile");
+  (async () => {
+    try {
+      const storedId = localStorage.getItem("profileId");
+      if (!storedId) throw new Error("Missing profile ID in localStorage");
+
+      const { data } = await api.get(`/api/users/${storedId}`);
+      const profile = data.profile;
+
+      if (!profile) throw new Error("No profile returned");
+
       setForm({
-        name: data.name || "",
-        about: data.about || "",
-        skills: (data.skills || []).join(", "),
+        name: profile.name || "",
+        about: profile.about || "",
+        skills: (profile.skills || []).join(", "),
+        status: profile.userStatus || "",
       });
-    })();
-  }, []);
+
+      setProfileId(profile._id);
+    } catch (err) {
+      console.error("Profile fetch error:", err.response?.data || err.message || err);
+      alert("Failed to load profile");
+    }
+  })();
+}, []);
+
 
   const save = async () => {
     try {
-      await api.put("/api/users/me", {
-        name: form.name,
-        about: form.about,
+      const skillsPayload = {
         skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
-      });
+      };
+
+      const statusPayload = {
+        newStatus: form.status,
+      };
+
+      await Promise.all([
+        api.put(`/api/users/skills/${profileId}`, skillsPayload),
+        api.put(`/api/users/status/${profileId}`, statusPayload),
+      ]);
+
       window.location.href = "/profile";
-    } catch {
+    } catch (err) {
       alert("Update failed");
     }
   };
@@ -38,9 +65,31 @@ export default function EditProfile() {
   return (
     <div>
       <h2>Edit Profile</h2>
-      <Input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-      <textarea placeholder="About" value={form.about} onChange={(e) => setForm({ ...form, about: e.target.value })} />
-      <Input placeholder="Skills (comma separated)" value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} />
+
+      <Input
+        placeholder="Name"
+        value={form.name}
+        disabled
+      />
+
+      <textarea
+        placeholder="About"
+        value={form.about}
+        disabled
+      />
+
+      <Input
+        placeholder="Skills (comma separated)"
+        value={form.skills}
+        onChange={(e) => setForm({ ...form, skills: e.target.value })}
+      />
+
+      <Input
+        placeholder="Status"
+        value={form.status}
+        onChange={(e) => setForm({ ...form, status: e.target.value })}
+      />
+
       <Button onClick={save}>Save</Button>
     </div>
   );
