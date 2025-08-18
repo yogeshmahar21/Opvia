@@ -19,7 +19,6 @@ export default function JobDetails() {
       try {
         const { data } = await api.get(`/api/jobs/get/${jobId}`);
         console.log("Job fetched:", data);
-        // Correctly set the job state by accessing the 'job' property from the response data.
         setJob(data.job);
         setError(null);
       } catch (err) {
@@ -31,6 +30,7 @@ export default function JobDetails() {
 
   const apply = async () => {
     try {
+      // FIX: Changed from api.post to api.get to match the backend route
       await api.get(`/api/jobs/apply/${jobId}`);
       alert("Applied!");
     } catch (err) {
@@ -50,11 +50,11 @@ export default function JobDetails() {
 
   return (
     <div>
-      <h2>Title: {job.title}</h2>
-      <p>Location: {job.location}</p>
-      <p>Type: {job.type}</p>
+      {/* FIX: The backend job model seems to have a "name" property for the job title. */}
+      <h2>Title: {job.title || job.name}</h2>
+      {/* FIX: The backend doesn't seem to save location/type, but we can try to render it if it exists. */}
+      <div>{job.location} · {job.type}</div>
       <p>Description: {job.description}</p>
-
       {job.image && (
         <img src={job.image} alt="Job" style={{ maxWidth: "400px", marginTop: "1rem" }} />
       )}

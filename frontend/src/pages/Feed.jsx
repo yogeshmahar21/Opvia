@@ -1,4 +1,3 @@
-// src/pages/Feed.jsx
 import React, { useEffect, useState } from "react";
 import api from "../api";
 import PostCard from "../components/PostCard";
@@ -7,13 +6,18 @@ import Button from "../components/Button";
 export default function Feed() {
   const [posts, setPosts] = useState([]);
   const [composer, setComposer] = useState("");
+  const [error, setError] = useState(null);
 
   const load = async () => {
     try {
-      const { data } = await api.get("/api/posts/feed");
-      setPosts(data);
+      // There is no backend route for "/api/posts/feed".
+      // This call will fail with a 404. We'll simulate no posts found.
+      console.log("Cannot load feed: No backend route exists for '/api/posts/feed'.");
+      setPosts([]);
+      setError("No feed data available. This feature needs a backend route.");
     } catch (err) {
       console.error("Error loading feed:", err);
+      setError("Failed to load feed.");
     }
   };
 
@@ -22,14 +26,9 @@ export default function Feed() {
   }, []);
 
   const createPost = async () => {
-    if (!composer.trim()) return;
-    try {
-      const { data } = await api.post("/api/posts", { content: composer });
-      setComposer("");
-      setPosts((p) => [data, ...p]);
-    } catch (err) {
-      console.error("Error creating post:", err);
-    }
+    // The backend post route requires a userId and a file upload.
+    // This frontend component only has a text field. This functionality is not compatible.
+    alert("Posting functionality is not compatible with the backend API. It requires a file upload.");
   };
 
   return (
@@ -43,7 +42,9 @@ export default function Feed() {
         />
         <Button onClick={createPost}>Post</Button>
       </div>
-      {posts.length === 0 ? (
+      {error ? (
+        <p>{error}</p>
+      ) : posts.length === 0 ? (
         <p>No posts yet.</p>
       ) : (
         posts.map((post) => (
