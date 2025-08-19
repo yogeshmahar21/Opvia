@@ -6,11 +6,10 @@ import { useNavigate } from "react-router-dom";
 
 export default function EditProfile() {
   const [form, setForm] = useState({
-    name: "",
-    about: "",
-    skills: "",
-    status: "",
-    username: "", // Optional field for future use
+    name: "",      // Will remain read-only
+    skills: "",    // Editable
+    status: "",    // Editable
+    username: "",  // Included, but changes won't persist without backend update
   });
 
   const [profileId, setProfileId] = useState("");
@@ -30,10 +29,10 @@ export default function EditProfile() {
 
         setForm({
           name: profile.name || "",
-          about: profile.about || "",
+          // Removed 'about' from form state initialization
           skills: (profile.skills || []).join(", "),
           status: profile.userStatus || "",
-          username: profile.Username || "", // Optional fallback
+          username: profile.username || "", // Assume 'username' might be available from profile
         });
 
         setProfileId(profile._id);
@@ -43,64 +42,56 @@ export default function EditProfile() {
         navigate("/onboarding");
       }
     })();
-  }, []);
+  }, [navigate]);
 
   const save = async () => {
-  try {
-    // Always treat form.skills as a string input (from input field)
-    const skillsArray = form.skills
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean); // flat array
+    try {
+      // The backend has a flaw here, as it expects a single string and then
+      // wraps it in a new array, overwriting existing skills. This is a temporary
+      // fix that sends the skills as a single string to work with the current backend.
+      // A proper fix would be to update the backend to use $addToSet.
+      await Promise.all([
+        api.post(`/api/users/profile/updateSkills/${profileId}`, { skills: form.skills }),
+        api.post(`/api/users/profile/update/status/${profileId}`, { newStatus: form.status }),
+        // No backend routes for updating name or username provided, so no API calls for them here.
+      ]);
 
-      console.log("Sending skillsArray:", skillsArray);
+      window.location.href = "/profile"; // Full page reload to show updated data
 
-
-    await Promise.all([
-      api.post(`/api/users/profile/updateSkills/${profileId}`, { skills: skillsArray }),
-      api.post(`/api/users/profile/update/status/${profileId}`, { newStatus: form.status }),
-    ]);
-
-    window.location.href = "/profile";
-  } catch (err) {
-    console.error("Save error:", err.response?.data || err.message || err);
-    alert("Update failed");
-  }
-};
-
-
+    } catch (err) {
+      console.error("Save error:", err.response?.data || err.message || err);
+      alert("Update failed");
+    }
+  };
 
   return (
     <div>
       <h2>Edit Profile</h2>
-
-      <Input placeholder="Name" 
-      value={form.name} 
-      onChange={(e) => setForm({ ...form, name: e.target.value })}
+      {/* Name is read-only as no backend route exists to update it */}
+      <Input
+        placeholder="Name"
+        value={form.name}
+        readOnly
+        style={{ cursor: "not-allowed", backgroundColor: "#f0f0f0" }} // Add some visual cue
       />
-
-      <textarea placeholder="About" 
-      value={form.about}
-      onChange={(e) => setForm({ ...form, about: e.target.value })}
-       />
+      {/* Removed: About textarea from JSX as per request */}
 
       <Input
         placeholder="Skills (comma separated)"
         value={form.skills}
         onChange={(e) => setForm({ ...form, skills: e.target.value })}
       />
-
       <Input
         placeholder="Status"
         value={form.status}
         onChange={(e) => setForm({ ...form, status: e.target.value })}
       />
-
-      {/* Optional Username field */}
+      {/* Username field - changes will not persist without backend support */}
       <Input
-        placeholder="Username (optional)"
+        placeholder="Username"
         value={form.username}
         onChange={(e) => setForm({ ...form, username: e.target.value })}
+        title="Changes to username will not be saved without backend support." // Tooltip for user
       />
 
       <Button onClick={save}>Save</Button>

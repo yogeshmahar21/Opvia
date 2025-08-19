@@ -9,14 +9,33 @@ export default function UserProfileView() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await api.get(`/api/users/${id}`);
-      setU(data);
+      try {
+        // ✅ Corrected API endpoint to match the backend router
+        const { data } = await api.get(`/api/users/profile/${id}`);
+        // ✅ Correctly access the nested profile object
+        setU(data.profile); 
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+      }
     })();
   }, [id]);
 
   const connect = async () => {
-    await api.post("/api/connections/request", { userId: id });
-    alert("Request sent");
+    const senderId = localStorage.getItem("profileId"); // 👈 Get the sender's ID
+    if (!senderId) {
+      alert("You must be logged in to send a connection request.");
+      return;
+    }
+
+    try {
+      // ✅ Corrected API endpoint to match the backend router,
+      //    and sent the receiver's ID in the body as expected.
+      await api.post(`/api/users/request/connection/${senderId}`, { profileId: id });
+      alert("Request sent");
+    } catch (err) {
+      console.error("Error sending connection request:", err);
+      alert("Failed to send request.");
+    }
   };
 
   if (!u) return <div>Loading…</div>;
