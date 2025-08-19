@@ -114,6 +114,28 @@ const getProfile = async (req, res, next) => {
 
 }
 
+const getUserProfileByName = async (req, res, next) => {
+    
+    //getting name from ProfileAuth
+
+    const name = req.username;
+
+    let profile;
+
+    try {
+        profile = await userProfileModel.findOne({ name : name });
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Failed to get user profile'));
+    }
+    console.log('profile', profile);
+
+    if(profile) {
+        res.status(200).json({profile});
+    } else {
+        return next(createHttpError(400, 'No profile found'));
+    }
+}
+
 const updateSkills = async(req, res, next) => {
     const { skills } = req.body;
 
@@ -332,4 +354,4 @@ const connection = async(req, res, next) => {
 
 }
 
-export { createProfile, getProfile, updateSkills, updateStatus, sendConnectionRequest , connection };
+export { createProfile, getProfile, getUserProfileByName , updateSkills, updateStatus, sendConnectionRequest , connection };
