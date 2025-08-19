@@ -47,26 +47,18 @@ export default function EditProfile() {
 
   const save = async () => {
   try {
-    // 🔐 Normalize skills input
-    const skillsArray = Array.isArray(form.skills)
-      ? form.skills
-      : form.skills
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
+    // Always treat form.skills as a string input (from input field)
+    const skillsArray = form.skills
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean); // flat array
 
-    console.log("Final skills array:", skillsArray);
+      console.log("Sending skillsArray:", skillsArray);
 
-    const skillsPayload = { skills: skillsArray };
-    const statusPayload = { newStatus: form.status };
-    const usernamePayload = {
-      Username: form.username?.trim() || `user_${Date.now()}`,
-    };
 
     await Promise.all([
-      api.post(`/api/users/profile/updateSkills/${profileId}`, skillsPayload),
-      api.post(`/api/users/profile/update/status/${profileId}`, statusPayload),
-      api.post(`/api/users/profile/updateUsername/${profileId}`, usernamePayload),
+      api.post(`/api/users/profile/updateSkills/${profileId}`, { skills: skillsArray }),
+      api.post(`/api/users/profile/update/status/${profileId}`, { newStatus: form.status }),
     ]);
 
     window.location.href = "/profile";
@@ -75,6 +67,8 @@ export default function EditProfile() {
     alert("Update failed");
   }
 };
+
+
 
   return (
     <div>
