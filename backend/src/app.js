@@ -75,7 +75,7 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRouter);
 app.use('/api/posts', postRouter);
 app.use('/api/jobs', jobRouter);
-app.use('/api/users/profile', userProfileRouter);
+app.use('/api/user/profile', userProfileRouter);
 app.use('/api/comment', commentsRouter);
 
 // --- Global Error Handler ---

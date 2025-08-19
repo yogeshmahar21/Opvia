@@ -171,7 +171,7 @@ const getUserById = async(req, res, next) => {
     }
 
    try {
-        const user = await userModel.findById(id);
+        const user = await userModel.findOne({ _id : id });
 
         if (!user) {
             return next(createHttpError(404, 'User not found'));
