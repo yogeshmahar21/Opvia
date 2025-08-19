@@ -10,11 +10,13 @@ import chatRouter from './chat/chatRouter.js';
 import { config } from './config/config.js';
 import userProfileRouter from './userProfile/userProfileRouter.js';
 import commentsRouter from './comments/commentsRouter.js';
+import cors from'cors';
 
 const app = express();
 
 // Parse JSON
 app.use(express.json());
+app.use(cors());
 
 app.use("/api/chat", chatRouter);
 

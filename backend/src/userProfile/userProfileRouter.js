@@ -19,9 +19,9 @@ userProfileRouter.post('/:name', upload.fields([{name: 'ProfileImg', maxCount: 1
 
 userProfileRouter.get('/:profileId', getProfile);
 
-userProfileRouter.post('/updateSkills/:profileId', updateSkills);
+userProfileRouter.put('/updateSkills/:profileId', updateSkills);
 
-userProfileRouter.post('/update/status/:profileId', updateStatus);
+userProfileRouter.put('/update/status/:profileId', updateStatus);
 
 userProfileRouter.post('/request/connection/:Id', sendConnectionRequest);
 
