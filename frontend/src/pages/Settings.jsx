@@ -1,51 +1,37 @@
 // src/pages/Settings.jsx
-import React, { useEffect, useState } from "react";
-import api from "../api";
-import Button from "../components/Button";
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Settings() {
-  const [settings, setSettings] = useState({
-    email: "",
-    privacy: "public",
-    notifications: true,
-  });
-
-  useEffect(() => {
-    (async () => {
-      const { data } = await api.get("/api/profile");
-      setSettings({
-        email: data.email || "",
-        privacy: data.privacy || "public",
-        notifications: data.notifications ?? true,
-      });
-    })();
-  }, []);
-
-  const save = async () => {
-    await api.put("/api/users/me/settings", settings);
-    alert("Settings saved");
-  };
-
   return (
-    <div>
-      <h2>Settings</h2>
-      <div>
-        <label>Email</label>
-        <input value={settings.email} onChange={(e) => setSettings({ ...settings, email: e.target.value })} />
+    <div className="page-container max-w-xl">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Settings</h2>
+      
+      <div className="space-y-4">
+        <Link 
+          to="/edit-profile" 
+          className="block bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
+        >
+          <span className="font-medium text-gray-800">Edit Profile Information</span>
+          <i className="fas fa-chevron-right text-gray-500"></i>
+        </Link>
+
+        {/* Placeholder for other settings options */}
+        <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between text-gray-500 cursor-not-allowed opacity-70">
+          <span className="font-medium">Change Password (Not implemented)</span>
+          <i className="fas fa-chevron-right"></i>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between text-gray-500 cursor-not-allowed opacity-70">
+          <span className="font-medium">Notification Preferences (Not implemented)</span>
+          <i className="fas fa-chevron-right"></i>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between text-gray-500 cursor-not-allowed opacity-70">
+          <span className="font-medium">Privacy Settings (Not implemented)</span>
+          <i className="fas fa-chevron-right"></i>
+        </div>
       </div>
-      <div>
-        <label>Privacy</label>
-        <select value={settings.privacy} onChange={(e) => setSettings({ ...settings, privacy: e.target.value })}>
-          <option value="public">Public</option>
-          <option value="connections">Connections only</option>
-          <option value="private">Private</option>
-        </select>
-      </div>
-      <div>
-        <label>Notifications</label>
-        <input type="checkbox" checked={settings.notifications} onChange={(e) => setSettings({ ...settings, notifications: e.target.checked })} />
-      </div>
-      <Button onClick={save}>Save</Button>
     </div>
   );
 }

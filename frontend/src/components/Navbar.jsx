@@ -1,34 +1,44 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { BsBellFill, BsFillChatDotsFill } from 'react-icons/bs';
-import { FaUserCircle } from 'react-icons/fa';
+// src/components/Navbar.jsx
+// Navigation bar component.
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-const Navbar = ({ token }) => {
-  const authLinks = (
-    <ul>
-      <li><NavLink to="/dashboard">Dashboard</NavLink></li>
-      <li><NavLink to="/feed">Feed</NavLink></li>
-      <li><NavLink to="/connections">Connections</NavLink></li>
-      <li><NavLink to="/jobs">Jobs</NavLink></li>
-      <li><NavLink to="/notifications"><BsBellFill /></NavLink></li>
-      <li><NavLink to="/chat"><BsFillChatDotsFill /></NavLink></li>
-      <li><NavLink to="/profile"><FaUserCircle /></NavLink></li>
-    </ul>
-  );
+export default function Navbar({ isAuthenticated, currentUserId, updateAuth }) {
+  const navigate = useNavigate();
 
-  const guestLinks = (
-    <ul>
-      <li><NavLink to="/login">Login</NavLink></li>
-      <li><NavLink to="/signup">Sign Up</NavLink></li>
-    </ul>
-  );
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("profileId"); // Clear profileId on logout
+    updateAuth(); // Update auth state in App.jsx
+    navigate("/login");
+  };
 
   return (
-    <nav className="navbar">
-      <div className="logo">Opvia</div>
-      {token ? authLinks : guestLinks}
+    <nav className="bg-gray-800 p-4 text-white shadow-md">
+      <div className="container mx-auto flex justify-between items-center">
+        <Link to={isAuthenticated ? "/dashboard" : "/login"} className="text-xl font-bold">Opvia</Link>
+        <div className="flex space-x-4">
+          {isAuthenticated ? (
+            <>
+              <Link to="/feed" className="hover:text-gray-300">Feed</Link>
+              <Link to="/jobs" className="hover:text-gray-300">Jobs</Link>
+              <Link to="/connections" className="hover:text-gray-300">Connections</Link>
+              <Link to="/chat" className="hover:text-gray-300">Chat</Link>
+              <Link to="/profile" className="hover:text-gray-300">Profile</Link>
+              <Link to="/notifications" className="hover:text-gray-300">Notifications</Link>
+              <Link to="/settings" className="hover:text-gray-300">Settings</Link>
+              <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md">
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="hover:text-gray-300">Login</Link>
+              <Link to="/signup" className="hover:text-gray-300">Sign Up</Link>
+            </>
+          )}
+        </div>
+      </div>
     </nav>
   );
-};
-
-export default Navbar;
+}

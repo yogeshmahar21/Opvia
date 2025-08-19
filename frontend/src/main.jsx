@@ -1,14 +1,17 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import './style.css'
-import App from './App.jsx'
-import { BrowserRouter } from 'react-router-dom'
+// src/main.jsx
+// This is the entry point of your React application.
+// It sets up the root React component and integrates React Router for navigation.
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.jsx';
+import { BrowserRouter } from 'react-router-dom';
+import './index.css'; // Global styles
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    {/* BrowserRouter enables client-side routing */}
     <BrowserRouter>
-    <App />
+      <App />
     </BrowserRouter>
-  </StrictMode>,
-)
+  </React.StrictMode>,
+);

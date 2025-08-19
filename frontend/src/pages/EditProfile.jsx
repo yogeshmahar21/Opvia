@@ -1,3 +1,4 @@
+// src/pages/EditProfile.jsx
 import React, { useEffect, useState } from "react";
 import api from "../api";
 import Button from "../components/Button";
@@ -29,7 +30,6 @@ export default function EditProfile() {
 
         setForm({
           name: profile.name || "",
-          // Removed 'about' from form state initialization
           skills: (profile.skills || []).join(", "),
           status: profile.userStatus || "",
           username: profile.username || "", // Assume 'username' might be available from profile
@@ -65,8 +65,9 @@ export default function EditProfile() {
   };
 
   return (
-    <div>
-      <h2>Edit Profile</h2>
+    <div className="page-container max-w-xl">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Edit Profile</h2>
+      
       {/* Name is read-only as no backend route exists to update it */}
       <Input
         placeholder="Name"

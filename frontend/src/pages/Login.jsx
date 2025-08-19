@@ -1,52 +1,87 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { NavLink } from "react-router-dom";
-import Input from "../components/Input";    
-import Button from "../components/Button";   
-import api from "../api";  
+// src/pages/Login.jsx
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import Input from '../components/Input';
+import Button from '../components/Button';
+import { loginUser } from '../api';
 
-
-export default function Login() {
+export default function Login({ updateAuth }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const submit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null); // Clear previous errors
+    setLoading(true);
+
     try {
-      const response = await api.post('/api/users/login', { email, password });
-      localStorage.setItem('token', response.data.token);
-      navigate('/dashboard');
+      const response = await loginUser({ email, password });
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('profileId', response.profileId); // Store profileId
+
+      updateAuth(); // Notify App.jsx about authentication change
+      navigate('/dashboard'); // Redirect to dashboard after successful login
     } catch (err) {
-      console.error("Login Error:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "Login failed");
+      console.error('Login error:', err.response?.data || err);
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:5000/auth/google';
+    // Redirect to backend's Google OAuth initiation endpoint
+    window.location.href = 'http://localhost:5000/auth/google'; 
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <h2>Login</h2>
-        <form onSubmit={submit}>
-          <Input 
-            placeholder="Email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Login to Opvia</h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
-          <Input 
-            type="password" 
-            placeholder="Password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
+          <Input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
           />
-          <Button type="submit">Login</Button>
+          
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? 'Logging In...' : 'Login'}
+          </Button>
         </form>
-        <NavLink to="/signup">Don’t have an account? Sign Up</NavLink>
-        <Button onClick={handleGoogleLogin} className="google-btn">Login with Google</Button>
+
+        <div className="mt-6 text-center">
+          <p className="text-gray-600 mb-4">Or log in with</p>
+          <Button 
+            onClick={handleGoogleLogin} 
+            className="w-full bg-red-600 hover:bg-red-700 flex items-center justify-center space-x-2"
+          >
+            <i className="fab fa-google"></i> <span>Login with Google</span>
+          </Button>
+        </div>
+
+        <p className="mt-8 text-center text-gray-700">
+          Don't have an account? <Link to="/signup" className="text-blue-600 hover:underline">Sign Up</Link>
+        </p>
       </div>
     </div>
   );
