@@ -16,10 +16,10 @@ export default function CreatePost() {
     const getUserId = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:5000/api/user/profile`, {
-        method: 'GET',
+      const res = await fetch('http://localhost:5000/api/user/profile', {
+        method: 'Get',
         headers : {
-          'Content-Type': 'application/json',
+          'Content-Type' : 'application/json',
           'Authorization' : `Bearer ${token}`
         }
       });
@@ -60,26 +60,26 @@ export default function CreatePost() {
     e.preventDefault();
     console.log('button clicked 1');
     
-    if (!imageFile) {
-      setError("Please select an image to upload");
+    if (!description.trim()) {
+      setError("Description is required");
       return;
     }
 
     setLoading(true);
     setError(null);
 
-    console.log("Submitting post for userProfileId:", userProfileId);
-
     try {
       const formData = new FormData();
       formData.append("description", description);
-      formData.append("postImg", imageFile); // 'postImg' must match backend's expected field name
+      if (imageFile) {
+        formData.append("postImg", imageFile);
+      }
 
       try {
         const token = localStorage.getItem('token');
         console.log('userPID',userProfileId);
         console.log(`http://localhost:5000/api/posts/${userProfileId}`);
-        const res = await fetch(`http://localhost:5000/api/posts`, {
+        const res = await fetch(`http://localhost:5000/api/posts/${userProfileId}`, {
           method: 'POST',
           headers: {
             'Authorization' : `Bearer ${token}`
@@ -118,7 +118,7 @@ export default function CreatePost() {
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">
-            Description (optional):
+            Description (required):
           </label>
           <textarea
             id="description"
@@ -127,19 +127,19 @@ export default function CreatePost() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Share something with your network..."
+            required
           />
         </div>
 
         <div className="mb-4">
           <label htmlFor="image" className="block text-gray-700 text-sm font-bold mb-2">
-            Image (required):
+            Image (optional):
           </label>
           <input
             type="file"
             id="image"
             accept="image/*"
             onChange={handleImageChange}
-            required
             className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
         </div>

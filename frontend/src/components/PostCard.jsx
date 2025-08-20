@@ -68,7 +68,7 @@ export default function PostCard({ post, onLike, onComment, currentUserId }) {
         <p className="text-gray-700 mb-4">{post.description}</p>
       )}
       
-      {post.postImg && (
+      {post.postImg &&  (
         <img 
           src={post.postImg} 
           alt="Post" 
