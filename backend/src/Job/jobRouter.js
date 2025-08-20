@@ -1,12 +1,10 @@
 import express from 'express';
-import { applyForJob, getAllJobs } from './jobController.js';
+import { applyForJob, getAllJobs, getJobById, deleteJob, searchJobs } from './jobController.js';
 import { postJob } from './jobController.js';
 import multer from 'multer';
 import path from 'node:path';   
 import { fileURLToPath } from 'node:url';
 import Auth from '../middleware/Auth.js';
-import { getJobById } from './jobController.js';
-import { deleteJob } from './jobController.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,5 +27,7 @@ jobRouter.get('/get/:jobId', getJobById);
 jobRouter.get('/apply/:jobId', Auth, applyForJob);
 
 jobRouter.delete('/delete/:jobId' , Auth, deleteJob);
+
+jobRouter.get('/search', searchJobs);
 
 export default jobRouter;

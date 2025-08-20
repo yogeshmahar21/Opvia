@@ -32,10 +32,10 @@ const getAllJobs = async (req, res, next) => {
 }
 
 const postJob = async (req, res, next) => {
-    const { description } = req.body;
+    const { companyName, location, description } = req.body;
 
-    if(!description) {
-        return next(createHttpError(401, 'Decription required'));
+    if(!companyName || !location || !description) {
+        return next(createHttpError(401, 'All fields required'));
     }
 
     //Taking name from the auth
@@ -86,6 +86,8 @@ const postJob = async (req, res, next) => {
     try {
         job = await jobModel.create({
             name,
+            companyName,
+            location,
             description,
             image : uploadResult.secure_url
         })
@@ -262,4 +264,28 @@ const deleteJob = async (req, res, next) => {
     }
 }
 
-export { getAllJobs, postJob, getJobById ,applyForJob, deleteJob}
+const searchJobs = async (req, res, next) => {
+    const keyword = req.query.q;
+
+    if(!keyword.trim()) {
+        console.log('Empty Keyword-returning empty jobs');
+        return res.status(200).json({ jobs: [] });
+    }
+
+    try{
+        const jobs = await jobModel.find({
+            $or : [
+                { name: { $regex: keyword, $options: 'i' } },
+                { companyName: { $regex: keyword, $options: 'i' } },
+                { location: { $regex: keyword, $options: 'i' } },
+            ],
+        });
+
+        console.log('search results:', 'jobs');
+        return res.status(200).json({ jobs });
+    } catch(err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Error in searchJobs controller'));
+    }
+}
+
+export { getAllJobs, postJob, getJobById ,applyForJob, deleteJob, searchJobs}
