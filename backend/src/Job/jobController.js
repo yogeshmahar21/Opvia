@@ -32,9 +32,9 @@ const getAllJobs = async (req, res, next) => {
 }
 
 const postJob = async (req, res, next) => {
-    const { companyName, location, description } = req.body;
+    const { title, companyName, location, description, salary } = req.body;
 
-    if(!companyName || !location || !description) {
+    if(!title || !companyName || !location || !description || !salary) {
         return next(createHttpError(401, 'All fields required'));
     }
 
@@ -86,8 +86,10 @@ const postJob = async (req, res, next) => {
     try {
         job = await jobModel.create({
             name,
+            title,
             companyName,
             location,
+            salary : salary ?? 'Negotiable',
             description,
             image : uploadResult.secure_url
         })

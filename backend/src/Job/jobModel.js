@@ -5,10 +5,16 @@ const jobSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    title: {
+        type: String
+    },
     companyName : {
         type: String,
     },
     location : {
+        type: String,
+    },
+    salary: {
         type: String,
     },
     description : {
