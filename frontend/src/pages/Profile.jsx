@@ -1,32 +1,42 @@
 // src/pages/Profile.jsx
 import React, { useEffect, useState } from "react";
 import api from "../api";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Profile() {
   const [me, setMe] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    (async () => {
-      const profileId = localStorage.getItem("profileId");
-      console.log("Loaded profileId:", profileId);
-
-      if (!profileId) {
-        console.error("No profileId found in localStorage. Navigating to onboarding.");
-        navigate('/onboarding');
-        return;
-      }
-
+  useEffect(()=>{
+    const fetchUserProfile = async() => {
+      const token = localStorage.getItem('token');
       try {
-        const { data } = await api.get(`/api/users/profile/${profileId}`);
-        console.log("Fetched profile data:", data);
-        setMe(data.profile); // Access the nested profile object
+        const res = await fetch('http://localhost:5000/api/user/profile', {
+          method: 'GET',
+          headers : {
+            "Content-Type" : 'application/json',
+            "Authorization" : `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+
+        if(res.ok) {
+          setMe(data['profile']);
+          console.log(data['profile']);
+        }
       } catch (err) {
-        console.error("Error fetching profile:", err);
+        console.error(err);
+        console.log(data);
+        alert('failed to fetch profile');
+        setTimeout(()=>{
+          navigate('/feed');
+        },3000);
       }
-    })();
-  }, [navigate]);
+    }
+    fetchUserProfile();
+    console.log(me['name']);
+  },[])
 
   if (!me) return <div>Loading…</div>;
 

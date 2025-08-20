@@ -90,9 +90,11 @@ export default function JobDetails({ currentUserId }) {
 
   return (
     <div className="page-container max-w-3xl">
-      <h2 className="text-3xl font-bold text-gray-800 mb-4">{job.title}</h2>
-      <p className="text-gray-600 text-lg mb-4">{job.companyName}</p>
-      
+      <h1 className="text-3xl font-bold text-gray-800 mb-2"><strong>Job Title: {job.title}</strong></h1>
+      <p className="text-lg text-gray-600 mb-4">
+        <strong>Company:</strong> {job.companyName}
+      </p>
+
       <div className="bg-gray-50 p-6 rounded-lg shadow-inner mb-6">
         <p className="text-gray-700 text-base mb-3">
           <i className="fas fa-map-marker-alt text-gray-500 mr-2"></i>
@@ -100,7 +102,7 @@ export default function JobDetails({ currentUserId }) {
         </p>
         <p className="text-gray-700 text-base mb-3">
           <i className="fas fa-money-bill-wave text-gray-500 mr-2"></i>
-          <strong>Salary:</strong> {job.salary ? `$${job.salary}` : 'Negotiable'}
+          <strong>Salary:</strong> {job.salary ? `${job.salary}` : 'Negotiable'}
         </p>
         <p className="text-gray-700 text-base mb-3">
           <i className="fas fa-calendar-alt text-gray-500 mr-2"></i>

@@ -2,10 +2,11 @@
 // Reusable input component with basic styling.
 import React from 'react';
 
-export default function Input({ placeholder, value, onChange, type = 'text', className = '', readOnly = false, style = {}, title = '' }) {
+export default function Input({ name, placeholder, value, onChange, type = 'text', className = '', readOnly = false, style = {}, title = '' }) {
   return (
     <input
       type={type}
+      name={name}
       placeholder={placeholder}
       value={value}
       onChange={onChange}

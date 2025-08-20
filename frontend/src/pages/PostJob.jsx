@@ -59,18 +59,18 @@ export default function PostJob() {
     setError(null);
     setLoading(true);
 
-    const userId = getUserId();
-    if (!userId) {
-      setError("Please log in to post a job.");
-      setLoading(false);
-      return;
-    }
+    // const userId = getUserId();
+    // if (!userId) {
+    //   setError("Please log in to post a job.");
+    //   setLoading(false);
+    //   return;
+    // }
 
-    if (!form.title || !form.companyName || !form.location || !form.description) {
-      setError("Please fill in all required fields (Title, Company, Location, Description).");
-      setLoading(false);
-      return;
-    }
+    // if (!form.title || !form.companyName || !form.location || !form.description) {
+    //   setError("Please fill in all required fields (Title, Company, Location, Description).");
+    //   setLoading(false);
+    //   return;
+    // }
 
     const formData = new FormData();
     formData.append('title', form.title);
@@ -79,14 +79,35 @@ export default function PostJob() {
     formData.append('salary', form.salary);
     formData.append('description', form.description);
     if (form.jobImg) {
-      formData.append('jobImg', form.jobImg); // 'jobImg' must match backend's expected field name
+      formData.append('JobImg', form.jobImg); // 'jobImg' must match backend's expected field name
     }
 
     try {
       // Your backend postJob route is POST /api/jobs/post/:userId
-      await postJob(userId, formData);
-      alert('Job posted successfully!');
-      navigate('/jobs'); // Redirect to jobs list
+      const token = localStorage.getItem('token');
+
+      try {
+        const res = await fetch('http://localhost:5000/api/jobs', {
+          method: 'POST',
+          headers: {
+            'Authorization' : `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if(res.ok) {
+          console.log(data);
+          //alert(data['id']); 
+          alert('Job successfully posted!'); 
+          navigate(`/jobs/${data.id}`);
+          console.log(res)
+        }
+      } catch (err) {
+        console.error(err);
+        //console.log(res);
+      }
     } catch (err) {
       console.error('Error posting job:', err.response?.data || err);
       setError(err.response?.data?.message || 'Failed to post job. Please try again.');

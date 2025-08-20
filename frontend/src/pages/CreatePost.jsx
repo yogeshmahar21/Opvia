@@ -1,5 +1,5 @@
 // src/pages/CreatePost.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createPost } from "../api";
 import { useNavigate } from "react-router-dom";
 
@@ -9,23 +9,37 @@ export default function CreatePost() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [userProfileId, setUserProfileId] = useState('');
   const navigate = useNavigate();
 
-  // Get userId from localStorage
-  const getUserId = () => {
+  useEffect(()=> {
+    const getUserId = async () => {
     const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        // Use fallback options to correctly extract userId
-        return payload.id || payload._id || payload.userId;
-      } catch (err) {
-        console.error("Error parsing token:", err);
-        return null;
+    try {
+      const res = await fetch(`http://localhost:5000/api/user/profile`, {
+        method: 'GET',
+        headers : {
+          'Content-Type': 'application/json',
+          'Authorization' : `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if(res.ok) {
+        console.log(data);
+        const decodedData = data['profile'];
+        setUserProfileId(decodedData['_id']);
+        console.log(decodedData['_id']);  
       }
+
+      
+    } catch (err) {
+      console.error(err, data);
     }
-    return null;
   };
+  getUserId();
+  },[])
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -44,13 +58,8 @@ export default function CreatePost() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('button clicked 1');
     
-    const userId = getUserId();
-    if (!userId) {
-      setError("Please log in to create a post");
-      return;
-    }
-
     if (!imageFile) {
       setError("Please select an image to upload");
       return;
@@ -59,12 +68,34 @@ export default function CreatePost() {
     setLoading(true);
     setError(null);
 
+    console.log("Submitting post for userProfileId:", userProfileId);
+
     try {
       const formData = new FormData();
       formData.append("description", description);
       formData.append("postImg", imageFile); // 'postImg' must match backend's expected field name
 
-      await createPost(userId, formData);
+      try {
+        const token = localStorage.getItem('token');
+        console.log('userPID',userProfileId);
+        console.log(`http://localhost:5000/api/posts/${userProfileId}`);
+        const res = await fetch(`http://localhost:5000/api/posts`, {
+          method: 'POST',
+          headers: {
+            'Authorization' : `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if(res.ok) {
+          console.log(data);
+          alert(data['message']);
+        }
+      } catch (err) {
+        console.error(err);
+      }
       
       // Redirect to feed after successful post
       navigate("/feed");

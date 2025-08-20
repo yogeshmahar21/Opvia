@@ -8,6 +8,33 @@ export default function Connections({ currentUserId, currentUserProfileId }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+
+  useEffect(()=>{
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('http://localhost:5000/api/user/profile', {
+          method: 'GET',
+          headers: {
+            'Authorization' : `Bearer ${token}`
+          },
+        });
+
+        const data = await res.json();
+
+        if(res.ok) {
+          setUserProfile(data.profile);
+          setConnections(data.profile.connectionIds);
+          setRequests(data.profile.connectionReqIds);
+          console.log(data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchUserProfile();
+  },[])
 
   useEffect(() => {
     const fetchConnectionsData = async () => {
@@ -20,7 +47,7 @@ export default function Connections({ currentUserId, currentUserProfileId }) {
       setLoading(true);
       setError(null);
       try {
-        const response = await api.get(`/api/users/profile/${currentUserProfileId}`);
+        const response = await api.get(`/api/user/profile/${currentUserProfileId}`);
         const profile = response.data.profile;
 
         if (profile) {

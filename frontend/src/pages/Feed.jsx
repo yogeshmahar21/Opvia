@@ -13,20 +13,24 @@ export default function Feed({ currentUserId }) {
 
   // Function to load posts from the backend
   const loadPosts = async () => {
-    try {
-      setLoading(true);
-      setError(null); // Clear previous errors
-      const { posts: fetchedPosts } = await fetchPosts(); // Assuming backend returns { posts: [...] }
-      setPosts(fetchedPosts || []); // Ensure it's an array
-    } catch (err) {
-      console.error("Error loading posts:", err);
-      setError("Failed to load posts. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    setError(null);
+    const response = await fetchPosts();
+    console.log("Fetched posts response:", response);
+    const fetchedPosts = response.posts;
+    setPosts(fetchedPosts || []);
+  } catch (err) {
+    console.error("Error loading posts:", err);
+    setError("Failed to load posts. Please try again later.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
+    console.log("currentUserId in Feed:", currentUserId);
     loadPosts();
   }, []); // Empty dependency array means this runs once on mount
 

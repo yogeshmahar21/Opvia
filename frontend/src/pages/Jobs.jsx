@@ -11,14 +11,32 @@ export default function Jobs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchSubmitted, setIsSearchSubmitted] = useState(false);
+
   const navigate = useNavigate();
 
   const fetchAllJobs = async () => {
     try {
       setLoading(true);
       setError(null);
-      const { jobs: fetchedJobs } = await getAllJobs(); // Assuming backend returns { jobs: [...] }
-      setJobs(fetchedJobs || []);
+      try {
+        const res = await fetch('http://localhost:5000/api/jobs', {
+          method: 'GET',
+          headers: {
+            'Content-Type' : 'application/json'
+          }
+        });
+
+        const data = await res.json();
+        console.log(data);
+
+        if(res.ok) {
+          setJobs(data['jobs']);
+          console.log(jobs);
+        }
+      } catch (err) {
+        console.log(err);
+      }
     } catch (err) {
       console.error('Error fetching all jobs:', err);
       setError('Failed to load jobs. Please try again later.');
@@ -29,7 +47,9 @@ export default function Jobs() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    setIsSearchSubmitted(true);  
     if (!searchTerm.trim()) {
+      setIsSearchSubmitted(false);
       fetchAllJobs(); // If search term is empty, fetch all jobs again
       return;
     }
@@ -74,11 +94,13 @@ export default function Jobs() {
             Search Jobs
           </Button>
         </form>
+        {!searchTerm.trim() && (
         <div className="text-center md:text-left">
           <Button onClick={handlePostJobClick} className="bg-green-600 hover:bg-green-700">
             Post a New Job
           </Button>
-        </div>
+          </div>
+        )}
       </div>
 
       {loading && <p className="text-center text-gray-600">Loading jobs...</p>}
@@ -95,7 +117,7 @@ export default function Jobs() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {!loading && !error && jobs.map(job => (
-          <JobCard key={job._id} job={job} />
+          <JobCard key={job._id} job={job} isSearchResult={isSearchSubmitted}/>
         ))}
       </div>
     </div>

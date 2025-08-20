@@ -125,7 +125,7 @@ export const createPost = async (userId, formData) => {
 export const fetchPosts = async () => {
   try {
     // Backend PostRouter has: postRouter.get('/getAll', getAllPosts);
-    const response = await api.get('/api/posts/getAll');
+    const response = await api.get('/api/posts/');
     return response.data;
   } catch (error) {
     console.error('Error fetching posts:', error);
