@@ -9,7 +9,6 @@ const postSchema = new mongoose.Schema({
     },
     postImg: {
         type: String,
-        required: true,
     },
     commentIds : {
         type : [String],
