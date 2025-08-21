@@ -17,7 +17,7 @@ const getAllJobs = async (req, res, next) => {
     let jobs;
 
     try {
-        jobs = await jobModel.find();
+        jobs = await jobModel.find().sort({ createdAt : -1 });
     } catch (err) {
         console.error('Error in fetching jobs', err);
         return next(createHttpError(400, err instanceof Error ? err.message : 'Error in fetching jobs from Database'));
