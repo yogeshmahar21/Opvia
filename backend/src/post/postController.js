@@ -231,4 +231,20 @@ const likePost = async (req, res, next) => {
     }
 }
 
-export { post, getPostById, deletePost, likePost }
+const getAllPosts = async (req, res, next) =>  {
+    let posts;
+
+    try {
+        posts = await postModel.find().sort({ createdAt : -1 });
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Error fetching posts'));
+    }
+
+    if(posts.length>0) {
+        res.status(200).json({ posts });
+    } else {
+        return next(createHttpError(404,'No posts found'));
+    }
+}
+
+export { post, getPostById, deletePost, likePost, getAllPosts }
