@@ -90,6 +90,60 @@ const createProfile = async (req, res, next) => {
 
 }
 
+const updateProfilePic = async (req, res, next) => {
+    const { profileId } = req.params;
+
+    if(!profileId) {
+        return next(createHttpError(400, 'Require profile Id'));
+    }
+
+    const files = req.files;
+    
+    if(!files["ProfileImg"] || files['ProfileImg'].length == 0) {
+        return next(createHttpError(400,"upload an image to update"));
+    }
+
+    const mimeParts = files["ProfileImg"][0].mimetype.split("/");
+    const coverImageMimeType = mimeParts[mimeParts.length - 1];
+    const fileName = files["ProfileImg"][0].filename;
+    const filePath = path.resolve(__dirname,"../../public/data/uploads",fileName);
+
+    let uploadResult
+
+    try {
+        uploadResult = await cloudinary.uploader.upload(filePath, {
+        filename_override: fileName,
+        folder: "JobImages",
+        format: coverImageMimeType,
+        });
+
+        await fs.promises.unlink(filePath);
+
+    } catch (err) {
+        console.error(err);
+        return next(createHttpError(400, "error in uploading files to cloud"));
+    }
+
+    //updating the image url in profile
+
+    let updatedProfile;
+
+    try {
+        updatedProfile = await userProfileModel.findByIdAndUpdate(
+            profileId,
+            { profilePic : uploadResult.secure_url },
+            { new : true }
+        );
+
+        if(updatedProfile) {
+            res.status(200).res({'message':'updated successfully'});
+        }
+    } catch (err) {
+        return next(createHttpError(400,err instanceof Error ? err.message : 'Unable to connect to Database'));
+    }
+
+}
+
 const getProfile = async (req, res, next) => {
 
     const { profileId } = req.params;
@@ -370,4 +424,4 @@ const connection = async(req, res, next) => {
 
 }
 
-export { createProfile, getProfile, getUserProfileByName , updateSkills, updateStatus, sendConnectionRequest , connection };
+export { createProfile, updateProfilePic ,getProfile, getUserProfileByName , updateSkills, updateStatus, sendConnectionRequest , connection };
