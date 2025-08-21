@@ -199,6 +199,8 @@ const deletePost = async (req, res, next) => {
 const likePost = async (req, res, next) => {
     const { postId } = req.params;
 
+    const userId = req.userId;
+
     if(!postId) {
         return next(createHttpError(400, 'post id required'));
     }
@@ -211,13 +213,44 @@ const likePost = async (req, res, next) => {
         return next(createHttpError(400, err instanceof Error ? err.message : 'Failed to fetch post'));
     }
 
-    const likes = post.like + 1;
+    const postLikers = post.likedBy;
 
-    let updatedPost;
+    if (postLikers.includes(userId)) {
+        const updatedPostLikers = postLikers.filter(Liker => Liker!==userId);
+        const like = post.like - 1;
+
+        try {
+            const res = await postModel.findOneAndUpdate(
+                { _id : postId },
+                { 
+                    likedBy : updatedPostLikers,
+                    like : like  
+                },
+                { new : true }
+            );
+
+            if(!res) {
+                return next(createHttpError(400,'Unable to connect database'));
+            } else {
+                res.status(200).json({'message':'unliked the post'});
+            }
+        } catch (err) {
+            return next(createHttpError(400, err instanceof Error ? err.message : 'database Error'));
+        }
+    } else {
+
+    postLikers.push(userId);
+
+    const likes = post.like + 1;
+       
+    let updatedPost    
 
     try {
         updatedPost = await postModel.findOneAndUpdate({ _id : postId },
-            { like : likes },
+            { 
+              like : likes,
+              likedBy : postLikers  
+            },
             { new : true }
         );
     } catch (err) {
@@ -229,6 +262,9 @@ const likePost = async (req, res, next) => {
     } else { 
         res.status(500).json({'error':'Internal Server Error'});
     }
+    }
+
+    
 }
 
 const getAllPosts = async (req, res, next) =>  {
