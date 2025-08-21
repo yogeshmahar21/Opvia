@@ -20,6 +20,7 @@ export default function Navbar({ isAuthenticated, currentUserId, updateAuth }) {
         <div className="flex space-x-4">
           {isAuthenticated ? (
             <>
+              <Link to="/dashboard" className="hover:text-gray-300">Dashboard</Link>
               <Link to="/feed" className="hover:text-gray-300">Feed</Link>
               <Link to="/jobs" className="hover:text-gray-300">Jobs</Link>
               <Link to="/connections" className="hover:text-gray-300">Connections</Link>

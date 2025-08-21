@@ -174,6 +174,18 @@ export const createComment = async (writerId, postId, commentData) => {
   }
 };
 
+// Fetch all comments for a specific post
+export const getCommentsByPostId = async (postId) => {
+  try {
+    const response = await api.get(`/api/comment/post/${postId}`);
+    return response.data; // should return an array of comments
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    throw error;
+  }
+};
+
+
 // Job API functions (mounted at /api/jobs in backend)
 export const postJob = async (userId, formData) => {
   try {
@@ -191,7 +203,7 @@ export const postJob = async (userId, formData) => {
 
 export const getAllJobs = async () => {
   try {
-    const response = await api.get('/api/jobs/getAll');
+    const response = await api.get('/api/jobs/');
     return response.data;
   } catch (error) {
     console.error('Error fetching all jobs:', error);

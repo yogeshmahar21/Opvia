@@ -38,14 +38,23 @@ const loadPosts = async () => {
 };
 
   const handleLike = async (postId) => {
-    try {
-      await likePost(postId);
-      loadPosts();
-    } catch (err) {
-      console.error("Error liking post:", err);
-      alert(err.response?.data?.message || "Failed to like post.");
-    }
-  };
+  try {
+    const response = await likePost(postId);
+    const updatedLikeCount = response.like;
+
+    // Update only the liked post in state
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post._id === postId
+          ? { ...post, like: updatedLikeCount, likedBy: response.likedBy } // optional likedBy for UI
+          : post
+      )
+    );
+  } catch (err) {
+    console.error("Error liking post:", err);
+    alert(err.response?.data?.message || "Failed to like post.");
+  }
+};
 
   const handleComment = async (writerId, postId, commentData) => {
     try {

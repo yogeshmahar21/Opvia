@@ -15,35 +15,24 @@ export default function Jobs() {
 
   const navigate = useNavigate();
 
-  const fetchAllJobs = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch('http://localhost:5000/api/jobs', {
-          method: 'GET',
-          headers: {
-            'Content-Type' : 'application/json'
-          }
-        });
+const fetchAllJobs = async () => {
+  try {
+    setLoading(true);
+    setError(null);
 
-        const data = await res.json();
-        console.log(data);
+    const data = await getAllJobs(); // Use the API function
+    console.log('Fetched jobs:', data);
 
-        if(res.ok) {
-          setJobs(data['jobs']);
-          console.log(jobs);
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    } catch (err) {
-      console.error('Error fetching all jobs:', err);
-      setError('Failed to load jobs. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    setJobs(data.jobs || []);
+  } catch (err) {
+    console.error('Error fetching all jobs:', err);
+    setError(err.response?.data?.message || 'Failed to load jobs. Please try again later.');
+    setJobs([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleSearch = async (e) => {
     e.preventDefault();

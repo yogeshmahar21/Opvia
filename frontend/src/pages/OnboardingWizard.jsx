@@ -23,10 +23,29 @@ export default function OnboardingWizard() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
+      console.log(token);
       try {
         const decodedToken = jwtDecode(token);
-        // Assuming your JWT payload has a 'username' or 'name' field
-        setProfileName(decodedToken.username || decodedToken.name || '');
+        const fetchName = async () => {
+          const res = await fetch('http://localhost:5000/api/user/profile', {
+            method: 'GET',
+            headers: {
+              'Content-Type' : 'application/json',
+              'Authorization' : `Bearer ${token}`
+            }
+          });
+
+          const data = await res.json();
+
+          if(res.ok) {
+            setProfileName(data.profile.name);
+            console.log(data);
+          } else {
+            console.error('failed to fetch');
+            console.log(res);
+          }
+        }
+        fetchName();
       } catch (e) {
         console.error("Error decoding token for username:", e);
       }
@@ -79,13 +98,36 @@ export default function OnboardingWizard() {
     const formData = new FormData();
     formData.append('skills', profileSkills.split(',').map(s => s.trim()).filter(Boolean).join(',')); // Backend expects comma-separated string
     formData.append('userStatus', profileStatus); // Match backend field name
+    formData.append('ProfileImg', profilePicFile);
     if (profilePicFile) {
-      formData.append('ProfileImg', profilePicFile); // Match backend's expected field name
+      // formData.append('ProfileImg', profilePicFile); // Match backend's expected field name
     }
     // 'name' is part of the URL param on backend, not body for createProfile
 
     try {
       // Backend createProfile route: POST /api/users/profile/:name
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:5000/api/user/profile/${profileName}`, {
+          method: 'POST',
+          headers: {
+            'Authorization' : `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if(res.ok) {
+          console.log('Profile created successfully!');
+          alert(data);
+          setTimeout(()=>{
+            navigate('/dashboard');
+          },2000);
+        }
+      } catch (err) {
+        console.error(err);
+      }
       const response = await createProfile(profileName, formData);
       localStorage.setItem('profileId', response.ProfileID); // Store the returned profile ID
       alert('Profile created successfully!');

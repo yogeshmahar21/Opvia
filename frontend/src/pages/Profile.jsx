@@ -4,7 +4,17 @@ import api from "../api";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Profile() {
-  const [me, setMe] = useState(null);
+  const [me, setMe] = useState({
+    _id: '',
+    name: '',
+    userStatus: '',
+    skills: [],
+    postedJobIds: [],
+    AppliedJobIds: [],
+    connectionIds: [],
+    connectionReqIds: [],
+    profilePic: ''
+  });
   const navigate = useNavigate();
 
   useEffect(()=>{
@@ -65,9 +75,6 @@ export default function Profile() {
         </p>
         <p className="text-gray-700 text-base">
           <strong>Status:</strong> {me.userStatus || "N/A"}
-        </p>
-        <p className="text-gray-700 text-base">
-          <strong>Username:</strong> {me.username || "N/A"}
         </p>
         {/* Removed: Email, Role, About fields as per previous requests */}
       </div>

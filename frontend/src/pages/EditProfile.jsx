@@ -7,37 +7,51 @@ import { useNavigate } from "react-router-dom";
 
 export default function EditProfile() {
   const [form, setForm] = useState({
-    name: "",      // Will remain read-only
-    skills: "",    // Editable
-    status: "",    // Editable
-    username: "",  // Included, but changes won't persist without backend update
+    name: "",
+    skills: "",
+    status: "",
+    username: "",
   });
 
   const [profileId, setProfileId] = useState("");
+  const [profilePic, setProfilePic] = useState(null);
+  const [preview, setPreview] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
       try {
-        const storedId = localStorage.getItem("profileId");
-        console.log("Fetching profile for ID:", storedId);
-        if (!storedId) throw new Error("Missing profile ID in localStorage");
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:5000/api/user/profile", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
 
-        const { data } = await api.get(`/api/users/profile/${storedId}`);
-        const profile = data.profile;
-
+        let profile;
+        if (res.ok) {
+          profile = data.profile;
+          setProfileId(profile._id);
+        }
         if (!profile) throw new Error("No profile returned");
 
         setForm({
           name: profile.name || "",
           skills: (profile.skills || []).join(", "),
           status: profile.userStatus || "",
-          username: profile.username || "", // Assume 'username' might be available from profile
+          username: profile.username || "",
         });
 
-        setProfileId(profile._id);
+        if (profile.profilePic) {
+          setPreview(profile.profilePic.startsWith("http")
+            ? profile.profilePic
+            : `http://localhost:5000/${profile.profilePic}`);
+        }
       } catch (err) {
-        console.error("Profile fetch error:", err.response?.data || err.message || err);
+        console.error("Profile fetch error:", err);
         alert("Failed to load profile. Please create one.");
         navigate("/onboarding");
       }
@@ -46,18 +60,26 @@ export default function EditProfile() {
 
   const save = async () => {
     try {
-      // The backend has a flaw here, as it expects a single string and then
-      // wraps it in a new array, overwriting existing skills. This is a temporary
-      // fix that sends the skills as a single string to work with the current backend.
-      // A proper fix would be to update the backend to use $addToSet.
       await Promise.all([
-        api.post(`/api/users/profile/updateSkills/${profileId}`, { skills: form.skills }),
-        api.post(`/api/users/profile/update/status/${profileId}`, { newStatus: form.status }),
-        // No backend routes for updating name or username provided, so no API calls for them here.
+        api.put(`/api/user/profile/updateSkills/${profileId}`, {
+          skills: form.skills,
+        }),
+        api.put(`/api/user/profile/update/status/${profileId}`, {
+          newStatus: form.status,
+        }),
       ]);
 
-      window.location.href = "/profile"; // Full page reload to show updated data
+      if (profilePic) {
+        const formData = new FormData();
+        formData.append("ProfileImg", profilePic);
 
+        await api.put(`/api/user/profile/updatePhoto/${profileId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+
+      alert("Changes updated successfully");
+      navigate("/profile");
     } catch (err) {
       console.error("Save error:", err.response?.data || err.message || err);
       alert("Update failed");
@@ -65,37 +87,75 @@ export default function EditProfile() {
   };
 
   return (
-    <div className="page-container max-w-xl">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Edit Profile</h2>
-      
-      {/* Name is read-only as no backend route exists to update it */}
-      <Input
-        placeholder="Name"
-        value={form.name}
-        readOnly
-        style={{ cursor: "not-allowed", backgroundColor: "#f0f0f0" }} // Add some visual cue
-      />
-      {/* Removed: About textarea from JSX as per request */}
+    <div className="page-container max-w-xl mx-auto bg-white shadow-md rounded-xl p-8 mt-8">
+      <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+        Edit Profile
+      </h2>
 
-      <Input
-        placeholder="Skills (comma separated)"
-        value={form.skills}
-        onChange={(e) => setForm({ ...form, skills: e.target.value })}
-      />
-      <Input
-        placeholder="Status"
-        value={form.status}
-        onChange={(e) => setForm({ ...form, status: e.target.value })}
-      />
-      {/* Username field - changes will not persist without backend support */}
-      <Input
-        placeholder="Username"
-        value={form.username}
-        onChange={(e) => setForm({ ...form, username: e.target.value })}
-        title="Changes to username will not be saved without backend support." // Tooltip for user
-      />
+      {/* Profile Picture Upload + Preview */}
+      <div className="mb-8 flex flex-col items-center">
+        {preview ? (
+          <img
+            src={preview}
+            alt="Profile Preview"
+            className="w-36 h-36 rounded-full object-cover border-2 border-gray-300 mb-4 shadow"
+          />
+        ) : (
+          <div className="w-36 h-36 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center mb-4 text-gray-400">
+            No Photo
+          </div>
+        )}
+        <label className="cursor-pointer bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition">
+          Upload Photo
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              setProfilePic(file);
+              setPreview(file ? URL.createObjectURL(file) : preview);
+            }}
+          />
+        </label>
+      </div>
 
-      <Button onClick={save}>Save</Button>
+      {/* Name (read-only) */}
+      <div className="mb-6">
+        <Input
+          placeholder="Name"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+        />
+      </div>
+
+      {/* Skills */}
+      <div className="mb-6">
+        <Input
+          placeholder="Skills (comma separated)"
+          value={form.skills}
+          onChange={(e) => setForm({ ...form, skills: e.target.value })}
+        />
+      </div>
+
+      {/* Status */}
+      <div className="mb-6">
+        <Input
+          placeholder="Status"
+          value={form.status}
+          onChange={(e) => setForm({ ...form, status: e.target.value })}
+        />
+      </div>
+
+      <div className="flex justify-center">
+        <Button
+          onClick={save}
+          className="px-6 py-2 rounded-lg font-semibold shadow-md bg-blue-600 text-white 
+                     hover:bg-blue-700 transition duration-200"
+        >
+          Save Changes
+        </Button>
+      </div>
     </div>
   );
 }
