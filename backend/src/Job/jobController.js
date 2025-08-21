@@ -17,7 +17,7 @@ const getAllJobs = async (req, res, next) => {
     let jobs;
 
     try {
-        jobs = await jobModel.find();
+        jobs = await jobModel.find().sort({ createdAt : -1 });
     } catch (err) {
         console.error('Error in fetching jobs', err);
         return next(createHttpError(400, err instanceof Error ? err.message : 'Error in fetching jobs from Database'));
@@ -56,29 +56,31 @@ const postJob = async (req, res, next) => {
     
     const files = req.files;
     
-    if(!files["JobImg"] || files['JobImg'].length == 0) {
-        return next(createHttpError(400,"upload an image to post"));
-    }
-    
-    const mimeParts = files["JobImg"][0].mimetype.split("/");
-    const coverImageMimeType = mimeParts[mimeParts.length - 1];
-    const fileName = files["JobImg"][0].filename;
-    const filePath = path.resolve(__dirname,"../../public/data/uploads",fileName);
+    // if(!files["JobImg"] || files['JobImg'].length == 0) {
+    //     return next(createHttpError(400,"upload an image to post"));
+    // }
 
     let uploadResult
+    
+    if(files?.JobImg && files.JobImg.length>0) {
+        const mimeParts = files["JobImg"][0].mimetype.split("/");
+        const coverImageMimeType = mimeParts[mimeParts.length - 1];
+        const fileName = files["JobImg"][0].filename;
+        const filePath = path.resolve(__dirname,"../../public/data/uploads",fileName);
 
-    try {
-        uploadResult = await cloudinary.uploader.upload(filePath, {
-        filename_override: fileName,
-        folder: "JobImages",
-        format: coverImageMimeType,
-        });
+        try {
+            uploadResult = await cloudinary.uploader.upload(filePath, {
+            filename_override: fileName,
+            folder: "JobImages",
+            format: coverImageMimeType,
+            });
 
-        await fs.promises.unlink(filePath);
+            await fs.promises.unlink(filePath);
 
-    } catch (err) {
-        console.error(err);
-        return next(createHttpError(400, "error in uploading files to cloud"));
+        } catch (err) {
+            console.error(err);
+            return next(createHttpError(400, "error in uploading files to cloud"));
+        }
     }
 
     let job;
@@ -91,7 +93,7 @@ const postJob = async (req, res, next) => {
             location,
             salary : salary ?? 'Negotiable',
             description,
-            image : uploadResult.secure_url
+            image : files.JobImg ? uploadResult.secure_url : ''
         })
     } catch (err) {
         return next(createHttpError(400, err instanceof Error ? err.message : 'Failed to connect Database'));

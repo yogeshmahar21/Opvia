@@ -1,5 +1,5 @@
 import express from 'express';
-import { deletePost, post, getPostById, likePost } from './postController.js';
+import { deletePost, post, getPostById, likePost, getAllPosts } from './postController.js';
 import multer from 'multer';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,5 +22,7 @@ postRouter.get('/get/:postId', getPostById );
 postRouter.delete('/delete/:postId', Auth, deletePost);
 
 postRouter.get('/like/:postId', likePost);
+
+postRouter.get('/', getAllPosts);
 
 export default postRouter;

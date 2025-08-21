@@ -22,48 +22,32 @@ const post = async (req, res, next) => {
 
     const files = req.files;
 
-    if(!files["postImg"] || files['postImg'].length == 0) {
-        return next(createHttpError(400,"upload an image to post"));
-    }
-
-    const mimeParts = files["postImg"][0].mimetype.split("/");
-    const coverImageMimeType = mimeParts[mimeParts.length - 1];
-    const fileName = files["postImg"][0].filename;
-    const filePath = path.resolve(__dirname,"../../public/data/uploads",fileName);
-
     let uploadResult;
 
-    try {
-        uploadResult = await cloudinary.uploader.upload(filePath, {
+    // if(!files["postImg"] || files['postImg'].length == 0) {
+    //     return next(createHttpError(400,"upload an image to post"));
+    // }
+
+    if(files?.postImg && files.postImg.length>0) {
+        const mimeParts = files["postImg"][0].mimetype.split("/");
+        const coverImageMimeType = mimeParts[mimeParts.length - 1];
+        const fileName = files["postImg"][0].filename;
+        const filePath = path.resolve(__dirname,"../../public/data/uploads",fileName);
+
+        try {
+            uploadResult = await cloudinary.uploader.upload(filePath, {
             filename_override: fileName,
-            folder: "propertyImages",
+            folder: "postImages",
             format: coverImageMimeType,
-        });
+            });
     
     
-        await fs.promises.unlink(filePath);
+            await fs.promises.unlink(filePath);
     
-    } catch (err) {
+        } catch (err) {
         return next(createHttpError(400, err instanceof Error ? err.message : 'Unable to upload to cloud'));
+        }
     }
-
-    //creating the comment Id for the post
-
-    // let comment;
-
-    // try {
-    //     comment = await commentsModel.create({
-    //         from : '',
-    //         to : userId,
-    //         message : []
-    //     })
-    // } catch (err) {
-    //     return next(createHttpError(400, err instanceof Error ? err.message : 'failed to create comment Id'));
-    // }
-
-    // if(!comment) {
-    //     return next(createHttpError(500, 'Internal Server Error'));
-    // }
 
     //creating the post
 
@@ -71,7 +55,7 @@ const post = async (req, res, next) => {
 
     try {
         post = await postModel.create({
-            postImg : uploadResult.secure_url,
+            postImg : files.postImg ? uploadResult.secure_url : '',
             userId,
             description : description ? description : '',
             commentIds : [],
@@ -247,4 +231,20 @@ const likePost = async (req, res, next) => {
     }
 }
 
-export { post, getPostById, deletePost, likePost }
+const getAllPosts = async (req, res, next) =>  {
+    let posts;
+
+    try {
+        posts = await postModel.find().sort({ createdAt : -1 });
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Error fetching posts'));
+    }
+
+    if(posts.length>0) {
+        res.status(200).json({ posts });
+    } else {
+        return next(createHttpError(404,'No posts found'));
+    }
+}
+
+export { post, getPostById, deletePost, likePost, getAllPosts }

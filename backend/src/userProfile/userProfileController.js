@@ -220,6 +220,22 @@ const sendConnectionRequest = async(req, res, next) =>{
         return next(createHttpError(400, 'All fields required'));
     }
 
+    //Checking if the reciever is already a connection
+
+    try {
+        const sender = await userProfileModel.findOne({ _id : Id });
+        if (sender) {
+            const connectionsList = sender.connectionIds;
+            if(connectionsList.includes(profileId)) {
+                return next(createHttpError(400,'User is already a connection'));
+            }
+        } else {
+            return next(createHttpError(400,'user not found'));
+        }
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Unable to fetch user'));
+    }
+
     // Add sender's userProfile Id to Reciever's connectionReqIds
 
     let reciever;
