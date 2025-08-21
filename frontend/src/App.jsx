@@ -34,7 +34,8 @@ function App() {
     if (token) {
       try {
         const payload = jwtDecode(token);
-        const userId = payload.id || payload._id || payload.userId; // Fallback options for userId
+        const userId = payload.id || payload._id || payload.userId || payload.sub; // Fallback options for userId
+        console.log("Decoded token payload:", payload, "Resolved userId:", userId);
         setCurrentUserId(userId);
         setIsAuthenticated(true);
       } catch (err) {
