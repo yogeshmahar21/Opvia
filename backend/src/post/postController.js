@@ -199,7 +199,7 @@ const deletePost = async (req, res, next) => {
 const likePost = async (req, res, next) => {
     const { postId } = req.params;
 
-    const userId = req.userId;
+    const username = req.username;
 
     if(!postId) {
         return next(createHttpError(400, 'post id required'));
@@ -215,12 +215,13 @@ const likePost = async (req, res, next) => {
 
     const postLikers = post.likedBy;
 
-    if (postLikers.includes(userId)) {
-        const updatedPostLikers = postLikers.filter(Liker => Liker!==userId);
+    //If the user unlikes
+    if (postLikers.includes(username)) {
+        const updatedPostLikers = postLikers.filter(Liker => Liker!==username);
         const like = post.like - 1;
 
         try {
-            const res = await postModel.findOneAndUpdate(
+            const response = await postModel.findOneAndUpdate(
                 { _id : postId },
                 { 
                     likedBy : updatedPostLikers,
@@ -229,7 +230,7 @@ const likePost = async (req, res, next) => {
                 { new : true }
             );
 
-            if(!res) {
+            if(!response) {
                 return next(createHttpError(400,'Unable to connect database'));
             } else {
                 res.status(200).json({'message':'unliked the post'});
@@ -237,9 +238,9 @@ const likePost = async (req, res, next) => {
         } catch (err) {
             return next(createHttpError(400, err instanceof Error ? err.message : 'database Error'));
         }
-    } else {
+    } else { //If the user likes
 
-    postLikers.push(userId);
+    postLikers.push(username);
 
     const likes = post.like + 1;
        
