@@ -40,15 +40,27 @@ const loadPosts = async () => {
   const handleLike = async (postId) => {
   try {
     const response = await likePost(postId);
-    const updatedLikeCount = response.like;
 
-    // Update only the liked post in state
-    setPosts(prevPosts =>
-      prevPosts.map(post =>
-        post._id === postId
-          ? { ...post, like: updatedLikeCount } // optional likedBy for UI
-          : post
-      )
+    setPosts((prevPosts) =>
+      prevPosts.map((post) => {
+        if (post._id === postId) {
+          // fallback: if response has likedBy, use it; otherwise toggle locally
+          const updatedLikedBy = response.likedBy
+            ? response.likedBy
+            : post.likedBy?.includes(currentUserId)
+              ? post.likedBy.filter((id) => id !== currentUserId) // unlike
+              : [...(post.likedBy || []), currentUserId]; // like
+
+          const updatedLikeCount = response.like ?? updatedLikedBy.length;
+
+          return {
+            ...post,
+            like: updatedLikeCount,
+            likedBy: updatedLikedBy,
+          };
+        }
+        return post;
+      })
     );
   } catch (err) {
     console.error("Error liking post:", err);
@@ -56,15 +68,33 @@ const loadPosts = async () => {
   }
 };
 
+
+
   const handleComment = async (writerId, postId, commentData) => {
-    try {
-      await createComment(writerId, postId, commentData);
-      loadPosts();
-    } catch (err) {
-      console.error("Error creating comment:", err);
-      alert(err.response?.data?.message || "Failed to add comment.");
-    }
-  };
+  try {
+    const response = await createComment(writerId, postId, commentData);
+
+    setPosts((prevPosts) =>
+      prevPosts.map((post) => {
+        if (post._id === postId) {
+          return {
+            ...post,
+            comments: [...(post.comments || []), response.comment], // add new comment
+            commentIds: [...(post.commentIds || []), response.comment._id],
+            commentCount: response.commentCount ?? (post.commentCount || 0) + 1,
+          };
+        }
+        return post;
+      })
+    );
+    return response;
+  } catch (err) {
+    console.error("Error creating comment:", err);
+    alert(err.response?.data?.message || "Failed to add comment.");
+    throw err;
+  }
+};
+
 
   const handleCreatePost = () => {
     navigate("/create-post");

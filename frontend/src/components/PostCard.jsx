@@ -1,9 +1,9 @@
 // src/components/PostCard.jsx
 import React, { useState, useEffect } from "react";
-import { likePost, createComment, getCommentsByPostId } from "../api";
+import { getCommentsByPostId } from "../api";
 import SingleComment from "./SingleComment";
 
-export default function PostCard({ post, onLike, currentUserId }) {
+export default function PostCard({ post, onLike, onComment, currentUserId }) {
 
   const [commentText, setCommentText] = useState("");
   const [isLiking, setIsLiking] = useState(false);
@@ -13,21 +13,15 @@ export default function PostCard({ post, onLike, currentUserId }) {
   const [postOwnerName, setPostOwnerName] = useState('');
   const [postOwnerId, setPostOwnerId] = useState('');
 
-  const commentsArray = [];
-
-  // Fetch all comments for this post
   const loadComments = async () => {
-    post.commentIds.map(async (comment) => {
-      try {
-      const commentsData = await getCommentsByPostId(comment)
-      commentsArray.push(commentsData['comment']);
-      setComments(commentsArray);
-      console.log(commentsData);
-      console.log(commentsArray);
+    try {
+      const fetched = await Promise.all(
+        (post.commentIds || []).map((id) => getCommentsByPostId(id))
+      );
+      setComments(fetched.map(c => c.comment).reverse());
     } catch (err) {
       console.error("Failed to load comments:", err);
     }
-    })
   };
 
   useEffect(()=>{
@@ -81,8 +75,7 @@ export default function PostCard({ post, onLike, currentUserId }) {
 
   const handleComment = async (e) => {
     e.preventDefault();
-    if (!commentText.trim()) return;
-
+     if (!commentText.trim()) return;
     if (!currentUserId) {
       alert("Please log in to comment");
       return;
@@ -90,20 +83,16 @@ export default function PostCard({ post, onLike, currentUserId }) {
 
     setIsCommenting(true);
     try {
-
-      try {
-        
-      } catch (err) {
-        
-      }
-
-      await createComment(currentUserId, post._id, { id: postOwnerId ,message: commentText });
+      const response = await onComment(currentUserId, post._id, { id: postOwnerId, message: commentText });
       setCommentText("");
-      setShowComments(true); // show comments after posting
-      await loadComments(); // reload comments
+      setShowComments(true);
+
+      if (response?.comment) {
+        setComments((prev) => [response.comment, ...prev]);
+      }
     } catch (err) {
       console.error("Error creating comment:", err);
-      alert(err.response?.data?.message || "Failed to add comment.");
+      alert(err?.response?.data?.message || "Failed to add comment.");
     } finally {
       setIsCommenting(false);
     }
@@ -186,7 +175,7 @@ export default function PostCard({ post, onLike, currentUserId }) {
             {comments.length > 0 ? (
               <ul className="list-none p-0 m-0">
                 {comments.map((comment) => (
-                  <SingleComment key={comment} comment={comment} />
+                  <SingleComment key={comment._id} comment={comment} />
                 ))}
               </ul>
             ) : (
