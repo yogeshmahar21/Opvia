@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAllJobs, searchJobs } from '../api';
-import JobCard from '../components/JobCard';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import AppliedJobCard from '../components/AppliedJobCard';
 
-export default function Jobs() {
+export default function AppliedJobs() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,10 +20,27 @@ const fetchAllJobs = async () => {
     setLoading(true);
     setError(null);
 
-    const data = await getAllJobs(); // Use the API function
-    console.log('Fetched jobs:', data);
+    // const data = await getAllJobs(); // Use the API function
+    const token = localStorage.getItem('token');
+    const res = await fetch('http://localhost:5000/api/user/profile',{
+        method: 'GET',
+        headers: {
+            'Accept' : 'application/json',
+            'Authorization' : `Bearer ${token}`
+        }
+    })
 
-    setJobs(data.jobs || []);
+    if(res.ok) {
+        const data = await res.json();
+        setJobs(data.profile.AppliedJobIds || []);
+        console.log('fetched profile', data.profile);
+        console.log('Fetched jobs:', data.profile.AppliedJobIds);
+    } else {
+        console.error('Error fetching Applied Jobs');
+    }
+    
+
+    // setJobs(data.jobs || []);
   } catch (err) {
     console.error('Error fetching all jobs:', err);
     setError(err.response?.data?.message || 'Failed to load jobs. Please try again later.');
@@ -88,11 +105,6 @@ const fetchAllJobs = async () => {
           <Button onClick={handlePostJobClick} className="bg-green-600 hover:bg-green-700">
             Post a New Job
           </Button>
-          <Link to ="/appliedJobs" >
-            <Button className="bg-orange-600 ml-2 hover:bg-orange-700">
-              Applied Jobs
-            </Button>
-          </Link>
           </div>
         )}
       </div>
@@ -111,7 +123,7 @@ const fetchAllJobs = async () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {!loading && !error && jobs.map(job => (
-          <JobCard key={job._id} job={job} isSearchResult={isSearchSubmitted}/>
+          <AppliedJobCard key={job} id={job} isSearchResult={isSearchSubmitted}/>
         ))}
       </div>
     </div>

@@ -424,4 +424,44 @@ const connection = async(req, res, next) => {
 
 }
 
-export { createProfile, updateProfilePic ,getProfile, getUserProfileByName , updateSkills, updateStatus, sendConnectionRequest , connection };
+const getAllUserProfiles = async(req, res, next) => {
+    let userProfiles;
+    try {
+        userProfiles = await userProfileModel.find();
+        if(userProfiles) {
+            res.status(200).json({userProfiles});
+        } else {
+            res.status(200).json({'message':'No profile exists'});
+        }
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+}
+
+const addSuggestedUsers = async(req, res, next) => {
+    const { userId } = req.body;
+    let { suggesstions } = req.body;
+
+    if(!userId || !suggesstions) {
+        return next(createHttpError(400, 'All fields required'));
+    }
+
+    if(suggesstions.includes(userId)) {
+        suggesstions = suggesstions.filter((sugg) => sugg !== userId);
+    }
+
+    try {
+        const response = await userProfileModel.findOneAndUpdate({ _id : userId },
+            { suggestedUsers : suggesstions },
+            { new : true }
+        );
+        if(response) {
+            res.status(200).json({'message':'suggesstions added successfully'});
+        }
+    } catch (err) {
+        return next(createHttpError(400, err instanceof Error ? err.message : 'Database Error'));
+    }
+
+
+}
+export { createProfile, updateProfilePic ,getProfile, getUserProfileByName , updateSkills, updateStatus, sendConnectionRequest , connection, getAllUserProfiles, addSuggestedUsers };

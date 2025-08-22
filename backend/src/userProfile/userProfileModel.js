@@ -31,6 +31,9 @@ const userProfileSchema = new mongoose.Schema({
     profilePic : {
         type : String,
     },
+    suggestedUsers: {
+        type: [String]
+    }
 });
 
 export default mongoose.model('profile', userProfileSchema, 'UserProfiles');

@@ -21,6 +21,7 @@ import OnboardingWizard from "./pages/OnboardingWizard"; // Import OnboardingWiz
 import Settings from "./pages/Settings";
 import Suggestions from "./pages/Suggestions";
 import { jwtDecode } from "jwt-decode"; // For decoding JWT
+import AppliedJobs from "./pages/AppliedJobs";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -134,6 +135,7 @@ function App() {
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/suggestions" element={<Suggestions />} />
+              <Route path="/appliedJobs" element={<AppliedJobs />} />
               {/* Redirect to dashboard or profile if logged in and trying to access auth pages */}
               <Route path="/login" element={<Navigate to="/dashboard" />} />
               <Route path="/signup" element={<Navigate to="/dashboard" />} />

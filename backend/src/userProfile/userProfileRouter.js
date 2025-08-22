@@ -1,5 +1,5 @@
 import express from 'express';
-import { connection, createProfile, getProfile, getUserProfileByName , sendConnectionRequest, updateProfilePic, updateSkills, updateStatus } from './userProfileController.js';
+import { addSuggestedUsers, connection, createProfile, getAllUserProfiles, getProfile, getUserProfileByName , sendConnectionRequest, updateProfilePic, updateSkills, updateStatus } from './userProfileController.js';
 import multer from 'multer';
 import path from 'node:path';   
 import { fileURLToPath } from 'node:url';
@@ -15,6 +15,10 @@ const upload = multer({
     dest: path.resolve(__dirname, '../../public/data/uploads'),
     limits: { fieldSize : 3e7 }
 })
+
+userProfileRouter.get('/getAllProfiles', getAllUserProfiles);
+
+userProfileRouter.post('/add/suggested/users', addSuggestedUsers);
 
 userProfileRouter.post('/:name', upload.fields([{name: 'ProfileImg', maxCount: 1}]), createProfile);
 

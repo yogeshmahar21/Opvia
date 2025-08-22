@@ -206,12 +206,24 @@ const applyForJob = async (req, res, next) => {
 
     if(result) {
 
+        let userProfile1;
+
+        try {
+            userProfile1 = await userProfileModel.findOne({ name });
+        } catch (err) {
+            return next(createHttpError(err instanceof Error ? err.message : 'Database Error'))
+        }
+
+        const appliedJobsList = userProfile1.AppliedJobIds;
+
+        appliedJobsList.push(jobId);
+
         let userProfile;
 
         try {
             userProfile = await userProfileModel.findOneAndUpdate(
                 { name },
-                { AppliedJobIds : jobId },
+                { AppliedJobIds : appliedJobsList },
                 { new : true }
             );
         } catch (err) {
