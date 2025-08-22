@@ -88,7 +88,7 @@ const SingleConnection = (prop) => {
 
   return (
     <div key={req} className="bg-gray-50 p-4 rounded-lg shadow-sm flex items-center justify-between">
-        <Link to={`/user/profile/${req}`} className="flex items-center">
+        <Link to={`/users/${req}`} className="flex items-center">
         <img
         src={user.profilePic || `https://placehold.co/40x40/cbd5e1/475569?text=${user.name.charAt(0).toUpperCase()}`}
         alt={user.name}
