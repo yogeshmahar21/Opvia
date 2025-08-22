@@ -17,7 +17,9 @@ export default function UserProfileView({ currentUserId, currentUserProfileId })
       setError(null);
       try {
         // Corrected API endpoint to match the backend router /api/users/profile/:profileId
-        const { data } = await api.get(`/api/users/profile/${id}`);
+        const { data } = await api.get(`/api/user/profile/${id}`);
+        console.log('requester', data.profile.name);
+       
         setUserProfile(data.profile); // Correctly access the nested profile object
         
         // Check if connection request already sent
@@ -49,8 +51,8 @@ export default function UserProfileView({ currentUserId, currentUserProfileId })
     setIsRequestSent(true); // Optimistically update UI
     try {
       // Backend expects sender's ID in URL params, receiver's ID in body as 'profileId'
-      await sendConnectionRequest(currentUserProfileId, userProfile._id);
-      alert("Connection request sent!");
+      const data = await sendConnectionRequest(id, currentUserId);
+      alert(data.message);
     } catch (err) {
       console.error("Error sending connection request:", err);
       setError(err.response?.data?.message || "Failed to send request.");

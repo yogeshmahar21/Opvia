@@ -27,7 +27,7 @@ export default function OnboardingWizard() {
       try {
         const decodedToken = jwtDecode(token);
         const fetchName = async () => {
-          const res = await fetch('http://localhost:5000/api/user/profile', {
+          const res = await fetch(`http://localhost:5000/api/users`, {
             method: 'GET',
             headers: {
               'Content-Type' : 'application/json',
@@ -38,7 +38,7 @@ export default function OnboardingWizard() {
           const data = await res.json();
 
           if(res.ok) {
-            setProfileName(data.profile.name);
+            setProfileName(data.Username);
             console.log(data);
           } else {
             console.error('failed to fetch');

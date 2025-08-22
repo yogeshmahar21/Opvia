@@ -1,23 +1,62 @@
 // src/components/PostCard.jsx
 import React, { useState, useEffect } from "react";
 import { likePost, createComment, getCommentsByPostId } from "../api";
+import SingleComment from "./SingleComment";
 
 export default function PostCard({ post, onLike, currentUserId }) {
+
   const [commentText, setCommentText] = useState("");
   const [isLiking, setIsLiking] = useState(false);
   const [isCommenting, setIsCommenting] = useState(false);
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState(false);
+  const [postOwnerName, setPostOwnerName] = useState('');
+  const [postOwnerId, setPostOwnerId] = useState('');
+
+  const commentsArray = [];
 
   // Fetch all comments for this post
   const loadComments = async () => {
-    try {
-      const commentsData = await getCommentsByPostId(post._id);
-      setComments(commentsData);
+    post.commentIds.map(async (comment) => {
+      try {
+      const commentsData = await getCommentsByPostId(comment)
+      commentsArray.push(commentsData['comment']);
+      setComments(commentsArray);
+      console.log(commentsData);
+      console.log(commentsArray);
     } catch (err) {
       console.error("Failed to load comments:", err);
     }
+    })
   };
+
+  useEffect(()=>{
+    const fetchPostOwner = async() => {
+      try {
+      const res = await fetch(`http://localhost:5000/api/user/profile/${post.userId}`,{
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await res.json();
+
+      if(res.ok) {
+        setPostOwnerName(data.profile.name);
+        setPostOwnerId(data.profile._id);
+      } else {
+        console.log(data['message']);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    }
+    fetchPostOwner();
+    // setComments(post.commentIds.length);
+    // setLikes(post.like);
+  },[])
+
 
   useEffect(() => {
     if (showComments) loadComments();
@@ -39,6 +78,7 @@ export default function PostCard({ post, onLike, currentUserId }) {
     }
   };
 
+
   const handleComment = async (e) => {
     e.preventDefault();
     if (!commentText.trim()) return;
@@ -50,7 +90,14 @@ export default function PostCard({ post, onLike, currentUserId }) {
 
     setIsCommenting(true);
     try {
-      await createComment(currentUserId, post._id, { message: commentText });
+
+      try {
+        
+      } catch (err) {
+        
+      }
+
+      await createComment(currentUserId, post._id, { id: postOwnerId ,message: commentText });
       setCommentText("");
       setShowComments(true); // show comments after posting
       await loadComments(); // reload comments
@@ -69,10 +116,10 @@ export default function PostCard({ post, onLike, currentUserId }) {
       {/* Post header */}
       <div className="flex items-center mb-4">
         <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-lg font-semibold mr-3">
-          {post.author?.name ? post.author.name.charAt(0).toUpperCase() : <i className="fas fa-user"></i>}
+          {postOwnerName ? postOwnerName.charAt(0).toUpperCase() : <i className="fas fa-user"></i>}
         </div>
         <div>
-          <strong className="text-gray-800">{post.author?.name || "Unknown User"}</strong>
+          <strong className="text-gray-800">{postOwnerName || "Unknown User"}</strong>
           <span className="text-gray-500 text-sm ml-2">
             • {new Date(post.createdAt).toLocaleString()}
           </span>
@@ -139,13 +186,7 @@ export default function PostCard({ post, onLike, currentUserId }) {
             {comments.length > 0 ? (
               <ul className="list-none p-0 m-0">
                 {comments.map((comment) => (
-                  <li key={comment._id} className="bg-gray-50 p-3 rounded-md mb-2 border border-gray-100">
-                    <strong className="text-gray-800">{comment.from?.name || "Unknown"}:</strong>{" "}
-                    <span className="text-gray-700">{comment.message}</span>
-                    <span className="text-gray-500 text-xs ml-2">
-                      • {new Date(comment.createdAt).toLocaleString()}
-                    </span>
-                  </li>
+                  <SingleComment key={comment} comment={comment} />
                 ))}
               </ul>
             ) : (

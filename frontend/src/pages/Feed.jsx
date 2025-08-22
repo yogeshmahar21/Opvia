@@ -46,7 +46,7 @@ const loadPosts = async () => {
     setPosts(prevPosts =>
       prevPosts.map(post =>
         post._id === postId
-          ? { ...post, like: updatedLikeCount, likedBy: response.likedBy } // optional likedBy for UI
+          ? { ...post, like: updatedLikeCount } // optional likedBy for UI
           : post
       )
     );

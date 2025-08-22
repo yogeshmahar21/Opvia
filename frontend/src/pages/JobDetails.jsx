@@ -43,15 +43,15 @@ export default function JobDetails({ currentUserId }) {
       // Assuming your applyForJob backend endpoint requires a userId in the body
       // and the jobId in the URL params.
       // Adjust applicationData structure based on what your backend expects for an application.
-      const applicationData = {
-        userId: currentUserId,
-        jobId: job._id,
-        // Potentially add more fields like a cover letter, resume link, etc.
-        // For now, it might just be the user applying for the job.
-      };
+      // const applicationData = {
+      //   userId: currentUserId,
+      //   jobId: job._id,
+      //   // Potentially add more fields like a cover letter, resume link, etc.
+      //   // For now, it might just be the user applying for the job.
+      // };
       
-      await applyForJob(job._id, applicationData); // Pass jobId to the API function
-      alert('Application submitted successfully!');
+      const data = await applyForJob(job._id); // Pass jobId to the API function
+      alert(data.message);
       // Optionally, redirect user or show confirmation
       navigate('/jobs'); // Go back to jobs list
     } catch (err) {

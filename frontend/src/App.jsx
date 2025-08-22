@@ -33,11 +33,35 @@ function App() {
 
     if (token) {
       try {
-        const payload = jwtDecode(token);
-        const userId = payload.id || payload._id || payload.userId || payload.sub; // Fallback options for userId
-        console.log("Decoded token payload:", payload, "Resolved userId:", userId);
-        setCurrentUserId(userId);
-        setIsAuthenticated(true);
+        // const payload = jwtDecode(token);
+        // const userId = payload.id || payload._id || payload.userId || payload.sub; // Fallback options for userId
+        // console.log("Decoded token payload:", payload, "Resolved userId:", userId);
+        const fetchUserProfileId = async() => {
+          try {
+          const response = await fetch('http://localhost:5000/api/user/profile', {
+            method: 'GET',
+            headers: {
+              'Content-Type':'application/json',
+              'Authorization' : `Bearer ${token}`
+            }
+          });
+
+          const data = await response.json();
+
+          if(response.ok) {
+            setCurrentUserId(data.profile._id);
+            console.log('currentUserId', data.profile._id);
+            setIsAuthenticated(true);
+          } else {
+            console.log('profileId Error data',data); 
+          }
+        } catch (err) {
+          console.error(err);
+        }
+        }
+
+        fetchUserProfileId();
+        
       } catch (err) {
         console.error("Error decoding token:", err);
         setIsAuthenticated(false);

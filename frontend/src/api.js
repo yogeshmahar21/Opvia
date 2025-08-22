@@ -87,7 +87,7 @@ export const updateStatus = async (profileId, newStatus) => {
 export const sendConnectionRequest = async (senderId, receiverProfileId) => {
   try {
     // Backend expects sender's ID in params, receiver's ID in body as 'profileId'
-    const response = await api.post(`/api/users/request/connection/${senderId}`, { profileId: receiverProfileId });
+    const response = await api.post(`/api/user/profile/connection/${receiverProfileId}`, { profileId: senderId });
     return response.data;
   } catch (error) {
     console.error('Error sending connection request:', error);
@@ -155,8 +155,22 @@ export const deletePost = async (postId) => {
 
 export const likePost = async (postId) => {
   try {
-    const response = await api.get(`/api/posts/like/${postId}`);
-    return response.data;
+    const token = localStorage.getItem('token');
+    const response = await fetch(`http://localhost:5000/api/posts/like/${postId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${token}`
+      }
+    })
+
+    const data = await response.json();
+    if(response.ok) {
+      return data;
+    } else {
+      console.log('like issue');
+    }
+    
   } catch (error) {
     console.error('Error liking post:', error);
     throw error;
@@ -177,7 +191,7 @@ export const createComment = async (writerId, postId, commentData) => {
 // Fetch all comments for a specific post
 export const getCommentsByPostId = async (postId) => {
   try {
-    const response = await api.get(`/api/comment/post/${postId}`);
+    const response = await api.get(`/api/comment/${postId}`);
     return response.data; // should return an array of comments
   } catch (error) {
     console.error('Error fetching comments:', error);
@@ -221,10 +235,26 @@ export const getJobById = async (jobId) => {
   }
 };
 
-export const applyForJob = async (jobId, applicationData) => {
+export const applyForJob = async (jobId) => {
   try {
-    const response = await api.post(`/api/jobs/apply/${jobId}`, applicationData);
-    return response.data;
+    // const response = await api.get(`/api/jobs/apply/${jobId}`, applicationData);
+    // return response.data;
+    const token = localStorage.getItem('token');
+    const res = await fetch(`http://localhost:5000/api/jobs/apply/${jobId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${token}`
+      }
+    });
+
+    const data = await res.json();
+
+    if(res.ok) {
+      return data;
+    } else {
+      console.log('apply-Job fetch problem');
+    }
   } catch (error) {
     console.error('Error applying for job:', error);
     throw error;

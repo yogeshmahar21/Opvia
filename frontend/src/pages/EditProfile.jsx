@@ -73,9 +73,26 @@ export default function EditProfile() {
         const formData = new FormData();
         formData.append("ProfileImg", profilePic);
 
-        await api.put(`/api/user/profile/updatePhoto/${profileId}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        try {
+          const res = await fetch(`http://localhost:5000/api/user/profile/${profileId}`, {
+            method: 'PUT',
+            body: formData
+          });
+
+          const data = await res.json();
+
+          if(res.ok) {
+            console.log(data);
+            alert('updated');
+          }
+        } catch (err) {
+          console.log(err);
+        }
+
+        // const data = await api.put(`/api/user/profile/${profileId}`, formData, {
+        //   headers: { "Content-Type": "multipart/form-data" },
+        // });
+        // console.log('proficPic Update',data)
       }
 
       alert("Changes updated successfully");
