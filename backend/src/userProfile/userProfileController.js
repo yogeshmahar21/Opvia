@@ -350,7 +350,7 @@ const connection = async(req, res, next) => {
     const senderFriendList = sender.connectionIds;
 
     if(senderFriendList.includes(profileId)) {
-        return next(createHttpError(400,'User is already a connection'));
+        res.status(200).json({'message':'user is already a connection'});
     }
 
     //Adding reciever to sender's connectionIds
@@ -386,7 +386,7 @@ const connection = async(req, res, next) => {
     const recieverFriendList = reciever.connectionIds;
 
     if(recieverFriendList.includes(id)) {
-        return next(createHttpError(400,'User is already a connection'));
+        res.status(200).json({'message':'user is already a connection'});
     }
 
 

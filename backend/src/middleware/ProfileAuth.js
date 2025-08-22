@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../config/config.js'
 import createHttpError from "http-errors"
+import userModel from '../user/userModel.js';
 
 const ProfileAuth = async (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -12,23 +13,12 @@ const ProfileAuth = async (req, res, next) => {
 
         req.userId = decoded.sub;
 
-        let username;
-
         try {
-            const user = await fetch(`http://localhost:5000/api/users/${req.userId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type' : 'application/json'
-                }
-            });
-
-            const data = await user.json();
-
-            if(user.ok) {
-                username = data.Username;
-                req.username = username;
+            const user = await userModel.findOne({ _id : req.userId });
+            if (user) {
+                req.username = user.Username;
             } else {
-                return next(createHttpError(400,'unauthorized'));
+                return next(createHttpError(400, 'No user Exists'));
             }
         } catch (err) {
             return next(createHttpError(400, err instanceof Error ? err.message : 'unable to fetch user'));

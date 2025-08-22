@@ -4,6 +4,7 @@ import multer from 'multer';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Auth from '../middleware/Auth.js';
+import ProfileAuth from '../middleware/ProfileAuth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,7 +22,7 @@ postRouter.get('/get/:postId', getPostById );
 
 postRouter.delete('/delete/:postId', Auth, deletePost);
 
-postRouter.get('/like/:postId', likePost);
+postRouter.get('/like/:postId', ProfileAuth ,likePost);
 
 postRouter.get('/', getAllPosts);
 

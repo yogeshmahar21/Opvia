@@ -186,7 +186,7 @@ const applyForJob = async (req, res, next) => {
     //check if user has already applied for the job
 
     if(peopleAppliedArray.includes(name)) {
-        return next(createHttpError(400,'You already applied for the job'));
+        res.status(200).json({'message':'You have already applied for this job'});
     }
 
     peopleAppliedArray.push(name);
