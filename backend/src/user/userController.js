@@ -162,9 +162,9 @@ const login = async(req, res, next) => {
     res.status(200).json({'token':token});
 }
 
-const getUserById = async(req, res, next) => {
+const getUserByToken = async(req, res, next) => {
 
-    const { id } = req.params;
+    const id = req.userId; 
 
     if(!id) {
         return next(createHttpError(401, 'User Id required'));
@@ -183,6 +183,28 @@ const getUserById = async(req, res, next) => {
         return next(createHttpError(500, 'Error fetching user'));
     }
 }
+
+const getUserById = async (req, res, next) => {
+    const { id } = req.params; 
+
+    if(!id) {
+        return next(createHttpError(401, 'User Id required'));
+    }
+
+   try {
+        const user = await userModel.findOne({ _id : id });
+
+        if (!user) {
+            return next(createHttpError(404, 'User not found'));
+        }
+
+        res.status(200).json(user);
+    } catch (err) {
+        console.error(err);
+        return next(createHttpError(500, 'Error fetching user'));
+    }
+}
+
 const updateUserById = async (req, res, next) => {
     try {
         const updateData = { ...req.body };
@@ -212,4 +234,4 @@ const updateUserById = async (req, res, next) => {
     }
 };
 
-export { createUser, login, getUserById, updateUserById }
+export { createUser, login, getUserByToken, getUserById, updateUserById }
