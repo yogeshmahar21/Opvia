@@ -84,14 +84,28 @@ export const updateStatus = async (profileId, newStatus) => {
   }
 };
 
-export const sendConnectionRequest = async (senderId, receiverProfileId) => {
+export const sendConnectionRequest = async (receiverId, senderId) => {
   try {
     // Backend expects sender's ID in params, receiver's ID in body as 'profileId'
-    const response = await api.post(`/api/user/profile/connection/${receiverProfileId}`, { profileId: senderId });
-    return response.data;
+    // const response = await api.post(`/api/user/profile/connection/${senderId}`, { profileId: receiverId });
+    const res = await fetch(`http://localhost:5000/api/user/profile/request/connection/${senderId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type':'application/json',
+      },
+      body: JSON.stringify({
+        profileId: receiverId
+      })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      // alert(data.message);
+      return data;
+    }
   } catch (error) {
     console.error('Error sending connection request:', error);
-    throw error;
+    throw error;  
   }
 };
 
@@ -249,11 +263,12 @@ export const applyForJob = async (jobId) => {
     });
 
     const data = await res.json();
+    console.log('job err',data);
 
     if(res.ok) {
       return data;
     } else {
-      console.log('apply-Job fetch problem');
+      return data;
     }
   } catch (error) {
     console.error('Error applying for job:', error);

@@ -28,7 +28,8 @@ export default function SignUp() {
     try {
       const response = await registerUser({ name: username, email, password }); // Match backend field names
       alert('User Registered'); // Display success message from backend
-      navigate('/login'); // Redirect to login page after successful registration
+      localStorage.setItem('token', response.token);
+      navigate('/dashboard'); // Redirect to login page after successful registration
     } catch (err) {
       console.error('Sign up error:', err.response?.data || err);
       setError(err.response?.data?.message || 'Registration failed. Please try again.');

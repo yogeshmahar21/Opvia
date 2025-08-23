@@ -281,7 +281,7 @@ const sendConnectionRequest = async(req, res, next) =>{
         if (sender) {
             const connectionsList = sender.connectionIds;
             if(connectionsList.includes(profileId)) {
-                return next(createHttpError(400,'User is already a connection'));
+                res.status(200).json({'message':'user is already a connection'});
             }
         } else {
             return next(createHttpError(400,'user not found'));

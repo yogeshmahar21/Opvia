@@ -120,17 +120,18 @@ export default function OnboardingWizard() {
 
         if(res.ok) {
           console.log('Profile created successfully!');
-          alert(data);
+          console.log(data);
           localStorage.setItem('profileId', data.profile._id);
           setTimeout(()=>{
+            window.location.reload();
             navigate('/dashboard');
           },2000);
         }
       } catch (err) {
         console.error(err);
       }
-      const response = await createProfile(profileName, formData);
-      localStorage.setItem('profileId', response.ProfileID); // Store the returned profile ID
+      // const response = await createProfile(profileName, formData);
+      // localStorage.setItem('profileId', response.ProfileID); // Store the returned profile ID
       alert('Profile created successfully!');
       navigate('/dashboard'); // Redirect to dashboard or profile page
     } catch (err) {

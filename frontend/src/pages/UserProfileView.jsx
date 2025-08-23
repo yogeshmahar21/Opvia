@@ -52,10 +52,11 @@ export default function UserProfileView({ currentUserId, currentUserProfileId })
     try {
       // Backend expects sender's ID in URL params, receiver's ID in body as 'profileId'
       const data = await sendConnectionRequest(id, currentUserId);
+      console.log('con req sent',data);
       alert(data.message);
     } catch (err) {
       console.error("Error sending connection request:", err);
-      setError(err.response?.data?.message || "Failed to send request.");
+      setError(err.message || "Failed to send request.");
       setIsRequestSent(false); // Revert UI if error
     }
   };

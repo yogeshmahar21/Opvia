@@ -52,11 +52,12 @@ export default function JobDetails({ currentUserId }) {
       
       const data = await applyForJob(job._id); // Pass jobId to the API function
       alert(data.message);
+      console.log(data);
       // Optionally, redirect user or show confirmation
       navigate('/jobs'); // Go back to jobs list
     } catch (err) {
       console.error('Error applying for job:', err);
-      alert(err.response?.data?.message || 'Failed to submit application. Please try again.');
+      alert(err.message || 'Failed to submit application. Please try again.');
     } finally {
       setIsApplying(false);
     }

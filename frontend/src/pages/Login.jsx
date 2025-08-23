@@ -21,8 +21,22 @@ export default function Login({ updateAuth }) {
       const response = await loginUser({ email, password });
       localStorage.setItem('token', response.token);
       localStorage.setItem('profileId', response.profileId); // Store profileId
-      window.location.reload();
-      updateAuth(); // Notify App.jsx about authentication change
+      updateAuth();
+      try {
+        const res = await fetch('http://localhost:5000/api/user/profile', {
+          method: 'GET',
+          headers: {
+            'Accept':'application/json',
+            'Authorization':`Bearer ${response.token}`
+          }
+        });
+        if(res.ok) {
+          window.location.reload();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+       // Notify App.jsx about authentication change
       navigate('/dashboard'); // Redirect to dashboard after successful login
     } catch (err) {
       console.error('Login error:', err.response?.data || err);
