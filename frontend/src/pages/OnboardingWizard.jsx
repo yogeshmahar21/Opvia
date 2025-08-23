@@ -121,6 +121,7 @@ export default function OnboardingWizard() {
         if(res.ok) {
           console.log('Profile created successfully!');
           alert(data);
+          localStorage.setItem('profileId', data.profile._id);
           setTimeout(()=>{
             navigate('/dashboard');
           },2000);

@@ -21,7 +21,7 @@ export default function Login({ updateAuth }) {
       const response = await loginUser({ email, password });
       localStorage.setItem('token', response.token);
       localStorage.setItem('profileId', response.profileId); // Store profileId
-
+      window.location.reload();
       updateAuth(); // Notify App.jsx about authentication change
       navigate('/dashboard'); // Redirect to dashboard after successful login
     } catch (err) {
