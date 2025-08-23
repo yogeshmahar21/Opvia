@@ -2,17 +2,14 @@
   "name": "opvia",
   "version": "1.0.0",
   "description": "This is a networking app",
-  "main": "index.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "app",
-    "networking"
-  ],
+  "keywords": ["app", "networking"],
   "author": "Shashank Varshney <varshneys495@gmail.com>",
   "license": "ISC",
   "dependencies": {
