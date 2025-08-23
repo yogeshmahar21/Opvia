@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { API_URL } from "../config/config";
 
 
 const SingleConnection = (prop) => {
@@ -25,7 +26,7 @@ const SingleConnection = (prop) => {
         console.log('id', id);
         const fetchData = async() => {
             try {
-                const res = await fetch(`http://localhost:5000/api/user/profile/${req}`, {
+                const res = await fetch(`${API_URL}/api/user/profile/${req}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type' : 'application/json'
@@ -54,7 +55,7 @@ const SingleConnection = (prop) => {
     try {
 
       try {
-        const res = await fetch(`http://localhost:5000/api/user/profile/connection/${id}`, {
+        const res = await fetch(`${API_URL}/api/user/profile/connection/${id}`, {
           method: 'POST',
           headers: {
             'Content-Type':'application/json'

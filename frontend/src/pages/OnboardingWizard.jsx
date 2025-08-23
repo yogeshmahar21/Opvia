@@ -6,6 +6,7 @@ import Button from '../components/Button';
 import AvatarUploader from '../components/AvatarUploader';
 import { createProfile } from '../api';
 import { jwtDecode } from 'jwt-decode';
+import { API_URL } from '../config/config';
 
 export default function OnboardingWizard() {
   const [step, setStep] = useState(1);
@@ -27,7 +28,7 @@ export default function OnboardingWizard() {
       try {
         const decodedToken = jwtDecode(token);
         const fetchName = async () => {
-          const res = await fetch(`http://localhost:5000/api/users`, {
+          const res = await fetch(`${API_URL}/api/users`, {
             method: 'GET',
             headers: {
               'Content-Type' : 'application/json',
@@ -108,7 +109,7 @@ export default function OnboardingWizard() {
       // Backend createProfile route: POST /api/users/profile/:name
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:5000/api/user/profile/${profileName}`, {
+        const res = await fetch(`${API_URL}/api/user/profile/${profileName}`, {
           method: 'POST',
           headers: {
             'Authorization' : `Bearer ${token}`

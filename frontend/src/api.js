@@ -1,9 +1,10 @@
 // src/api.js
 // Centralized Axios instance for making API requests with JWT interception.
 import axios from "axios";
+import { API_URL } from "./config/config";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000", // Your backend URL
+  baseURL: `${API_URL}`, // Your backend URL
 });
 
 // Axios Interceptor: Automatically attach JWT for every request
@@ -88,7 +89,7 @@ export const sendConnectionRequest = async (receiverId, senderId) => {
   try {
     // Backend expects sender's ID in params, receiver's ID in body as 'profileId'
     // const response = await api.post(`/api/user/profile/connection/${senderId}`, { profileId: receiverId });
-    const res = await fetch(`http://localhost:5000/api/user/profile/request/connection/${senderId}`, {
+    const res = await fetch(`${API_URL}/api/user/profile/request/connection/${senderId}`, {
       method: 'POST',
       headers: {
         'Content-Type':'application/json',
@@ -170,7 +171,7 @@ export const deletePost = async (postId) => {
 export const likePost = async (postId) => {
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5000/api/posts/like/${postId}`, {
+    const response = await fetch(`${API_URL}/api/posts/like/${postId}`, {
       method: 'GET',
       headers: {
         'Content-Type':'application/json',
@@ -254,7 +255,7 @@ export const applyForJob = async (jobId) => {
     // const response = await api.get(`/api/jobs/apply/${jobId}`, applicationData);
     // return response.data;
     const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:5000/api/jobs/apply/${jobId}`, {
+    const res = await fetch(`${API_URL}/api/jobs/apply/${jobId}`, {
       method: 'GET',
       headers: {
         'Content-Type':'application/json',

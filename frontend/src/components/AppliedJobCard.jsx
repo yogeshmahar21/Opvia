@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Button from './Button';
+import { API_URL } from '../config/config';
 
 export default function AppliedJobCard({ id, isSearchResult }) {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ export default function AppliedJobCard({ id, isSearchResult }) {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/jobs/get/${id}`, {
+        const res = await fetch(`${API_URL}/api/jobs/get/${id}`, {
           method: 'GET',
           headers: { 'Accept': 'application/json' }
         });

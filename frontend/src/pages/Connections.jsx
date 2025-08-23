@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import SingleConnection from '../components/SingleConnection';
 import SingleConnection2 from '../components/SingleConnection2';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config/config';
 
 export default function Connections({ currentUserId, currentUserProfileId }) {
 
@@ -30,7 +31,7 @@ export default function Connections({ currentUserId, currentUserProfileId }) {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem('token');
       try {
-        const res = await fetch('http://localhost:5000/api/user/profile', {
+        const res = await fetch(`${API_URL}/api/user/profile`, {
           method: 'GET',
           headers: {
             'Authorization' : `Bearer ${token}`
@@ -61,7 +62,7 @@ export default function Connections({ currentUserId, currentUserProfileId }) {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/user/profile/connection/${userProfile._id}`, {
+      const res = await fetch(`${API_URL}/api/user/profile/connection/${userProfile._id}`, {
         method: 'POST',
         headers: {
           'Content-Type':'application/json'
@@ -102,7 +103,7 @@ export default function Connections({ currentUserId, currentUserProfileId }) {
 
   const addSuggessetion = async(SArray) => {
     try {
-      const res = await fetch('http://localhost:5000/api/user/profile/add/suggested/users', {
+      const res = await fetch(`${API_URL}/api/user/profile/add/suggested/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -125,7 +126,7 @@ export default function Connections({ currentUserId, currentUserProfileId }) {
   const HandleSearchConnection = async () => {
     let userId;
     try {
-      const res = await fetch('http://localhost:5000/api/user/profile/getAllProfiles', {
+      const res = await fetch(`${API_URL}/api/user/profile/getAllProfiles`, {
         method: 'GET',
         headers: {
           'Accept':'application/json'

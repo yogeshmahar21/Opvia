@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { getCommentsByPostId } from "../api";
 import SingleComment from "./SingleComment";
+import { API_URL } from "../config/config";
 
 export default function PostCard({ post, onLike, onComment, currentUserId }) {
 
@@ -27,7 +28,7 @@ export default function PostCard({ post, onLike, onComment, currentUserId }) {
   useEffect(()=>{
     const fetchPostOwner = async() => {
       try {
-      const res = await fetch(`http://localhost:5000/api/user/profile/${post.userId}`,{
+      const res = await fetch(`${API_URL}/api/user/profile/${post.userId}`,{
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'

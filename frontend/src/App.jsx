@@ -22,6 +22,7 @@ import Settings from "./pages/Settings";
 import Suggestions from "./pages/Suggestions";
 import { jwtDecode } from "jwt-decode"; // For decoding JWT
 import AppliedJobs from "./pages/AppliedJobs";
+import { API_URL } from './config/config'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -39,7 +40,7 @@ function App() {
         // console.log("Decoded token payload:", payload, "Resolved userId:", userId);
         const fetchUserProfileId = async() => {
           try {
-          const response = await fetch('http://localhost:5000/api/user/profile', {
+          const response = await fetch(`${API_URL}/api/user/profile`, {
             method: 'GET',
             headers: {
               'Content-Type':'application/json',

@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { loginUser } from '../api';
+import { API_URL } from '../config/config';
 
 export default function Login({ updateAuth }) {
   const [email, setEmail] = useState('');
@@ -23,7 +24,7 @@ export default function Login({ updateAuth }) {
       localStorage.setItem('profileId', response.profileId); // Store profileId
       updateAuth();
       try {
-        const res = await fetch('http://localhost:5000/api/user/profile', {
+        const res = await fetch(`${API_URL}/api/user/profile`, {
           method: 'GET',
           headers: {
             'Accept':'application/json',
@@ -48,7 +49,7 @@ export default function Login({ updateAuth }) {
 
   const handleGoogleLogin = () => {
     // Redirect to backend's Google OAuth initiation endpoint
-    window.location.href = 'http://localhost:5000/auth/google'; 
+    window.location.href = `${API_URL}/auth/google`; 
   };
 
   return (

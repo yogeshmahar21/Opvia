@@ -5,6 +5,7 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import { postJob } from '../api'; // Your API function to post a job
 import { jwtDecode } from 'jwt-decode';
+import { API_URL } from '../config/config';
 
 export default function PostJob() {
   const [form, setForm] = useState({
@@ -87,7 +88,7 @@ export default function PostJob() {
       const token = localStorage.getItem('token');
 
       try {
-        const res = await fetch('http://localhost:5000/api/jobs', {
+        const res = await fetch(`${API_URL}/api/jobs`, {
           method: 'POST',
           headers: {
             'Authorization' : `Bearer ${token}`

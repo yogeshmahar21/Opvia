@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { createPost } from "../api";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config/config";
 
 export default function CreatePost() {
   const [description, setDescription] = useState("");
@@ -16,7 +17,7 @@ export default function CreatePost() {
     const getUserId = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch('http://localhost:5000/api/user/profile', {
+      const res = await fetch(`${API_URL}/api/user/profile`, {
         method: 'Get',
         headers : {
           'Content-Type' : 'application/json',
@@ -78,8 +79,8 @@ export default function CreatePost() {
       try {
         const token = localStorage.getItem('token');
         console.log('userPID',userProfileId);
-        console.log(`http://localhost:5000/api/posts/${userProfileId}`);
-        const res = await fetch(`http://localhost:5000/api/posts/${userProfileId}`, {
+        console.log(`${API_URL}/api/posts/${userProfileId}`);
+        const res = await fetch(`${API_URL}/api/posts/${userProfileId}`, {
           method: 'POST',
           headers: {
             'Authorization' : `Bearer ${token}`

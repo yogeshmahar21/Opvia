@@ -4,6 +4,7 @@ import api from "../api";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config/config";
 
 export default function EditProfile() {
   const [form, setForm] = useState({
@@ -22,7 +23,7 @@ export default function EditProfile() {
     (async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/user/profile", {
+        const res = await fetch(`${API_URL}/api/user/profile`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -48,7 +49,7 @@ export default function EditProfile() {
         if (profile.profilePic) {
           setPreview(profile.profilePic.startsWith("http")
             ? profile.profilePic
-            : `http://localhost:5000/${profile.profilePic}`);
+            : `${API_URL}/${profile.profilePic}`);
         }
       } catch (err) {
         console.error("Profile fetch error:", err);
@@ -74,7 +75,7 @@ export default function EditProfile() {
         formData.append("ProfileImg", profilePic);
 
         try {
-          const res = await fetch(`http://localhost:5000/api/user/profile/${profileId}`, {
+          const res = await fetch(`${API_URL}/api/user/profile/${profileId}`, {
             method: 'PUT',
             body: formData
           });

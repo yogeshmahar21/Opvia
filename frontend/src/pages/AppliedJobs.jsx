@@ -5,6 +5,7 @@ import { getAllJobs, searchJobs } from '../api';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import AppliedJobCard from '../components/AppliedJobCard';
+import { API_URL } from '../config/config';
 
 export default function AppliedJobs() {
   const [jobs, setJobs] = useState([]);
@@ -22,7 +23,7 @@ const fetchAllJobs = async () => {
 
     // const data = await getAllJobs(); // Use the API function
     const token = localStorage.getItem('token');
-    const res = await fetch('http://localhost:5000/api/user/profile',{
+    const res = await fetch(`${API_URL}/api/user/profile`,{
         method: 'GET',
         headers: {
             'Accept' : 'application/json',

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../api";
 import { Link, useNavigate } from "react-router-dom";
+import { API_URL } from "../config/config";
 
 export default function Profile() {
   const [me, setMe] = useState({
@@ -21,7 +22,7 @@ export default function Profile() {
     const fetchUserProfile = async() => {
       const token = localStorage.getItem('token');
       try {
-        const res = await fetch('http://localhost:5000/api/user/profile', {
+        const res = await fetch(`${API_URL}/api/user/profile`, {
           method: 'GET',
           headers : {
             "Content-Type" : 'application/json',
