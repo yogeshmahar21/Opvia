@@ -5,6 +5,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import Chat from './src/chat/chatModel.js';
 import Message from './src/chat/messageModel.js';
+const cors = require("cors");
 
 const startServer = async () => {
     await connectToDb();
@@ -13,7 +14,20 @@ const startServer = async () => {
 
     // Create HTTP server
     const server = http.createServer(app);
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
 
+    // Check if the origin is allowed
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
     // Attach Socket.IO
     const io = new Server(server, {
         cors: {
