@@ -11,7 +11,12 @@ const startServer = async () => {
     await connectToDb();
 
     const port = config.port || 5000;
+const allowedOrigins = [
+    // local frontend
 
+    "https://opvia-ashy.vercel.app"// deployed frontend
+    // "https://chat-app-6pm6.onrender.com", // deployed frontend
+];
     // Create HTTP server
     const server = http.createServer(app);
 app.use(cors({
