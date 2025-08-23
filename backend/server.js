@@ -5,34 +5,24 @@ import http from 'http';
 import { Server } from 'socket.io';
 import Chat from './src/chat/chatModel.js';
 import Message from './src/chat/messageModel.js';
-const cors = require("cors");
+import cors from "cors";
+
+
+
 
 const startServer = async () => {
     await connectToDb();
 
     const port = config.port || 5000;
-const allowedOrigins = [
-    // local frontend
-
-    "https://opvia-ashy.vercel.app"// deployed frontend
-    // "https://chat-app-6pm6.onrender.com", // deployed frontend
-];
+ 
     // Create HTTP server
     const server = http.createServer(app);
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-
-    // Check if the origin is allowed
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
-}));
+ app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "https://opvia-ashy.vercel.app", // Vercel URL later
+    credentials: true,
+  })
+);
     // Attach Socket.IO
     const io = new Server(server, {
         cors: {
