@@ -10,11 +10,37 @@ export default function Feed({ currentUserId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const [name, setName] = useState('');
 
   useEffect(() => {
   console.log("Feed mounted. currentUserId:", currentUserId);
   loadPosts();
 }, []);
+
+  useEffect(()=>{
+    const token = localStorage.getItem('token');
+    const fetchName = async() => {
+      try {
+        const res = await fetch(`${API_URL}/api/user/profile`, {
+        method: 'GET',
+        headers: {
+          'Content-Type':'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setName(data.profile.name);
+      } else {
+        console.error('Error fetching Name');
+      }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchName();
+  },[]);
 
 const loadPosts = async () => {
   console.log("loadPosts called");
@@ -47,9 +73,9 @@ const loadPosts = async () => {
           // fallback: if response has likedBy, use it; otherwise toggle locally
           const updatedLikedBy = response.likedBy
             ? response.likedBy
-            : post.likedBy?.includes(currentUserId)
-              ? post.likedBy.filter((id) => id !== currentUserId) // unlike
-              : [...(post.likedBy || []), currentUserId]; // like
+          : post.likedBy?.includes(name)
+              ? post.likedBy.filter((username) => username !== name) // unlike
+              : [...(post.likedBy || []), name]; // like
 
           const updatedLikeCount = response.like ?? updatedLikedBy.length;
 
@@ -74,23 +100,31 @@ const loadPosts = async () => {
   try {
     const response = await createComment(writerId, postId, commentData);
 
-    setPosts((prevPosts) =>
-      prevPosts.map((post) => {
-        if (post._id === postId) {
-          return {
-            ...post,
-            comments: [...(post.comments || []), response.comment], // add new comment
-            commentIds: [...(post.commentIds || []), response.comment._id],
-            commentCount: response.commentCount ?? (post.commentCount || 0) + 1,
-          };
-        }
-        return post;
+  if (!response || !response.comment) {
+      await loadPosts();
+      return response;
+    }
+
+    setPosts(prevPosts =>
+      prevPosts.map(post => {
+        if (post._id !== postId) return post;
+        return {
+          ...post,
+          comments: [...(post.comments || []), response.comment],
+          commentIds: response.comment?._id
+            ? [...(post.commentIds || []), response.comment._id]
+            : (post.commentIds || []),
+          commentCount:
+            typeof response.commentCount === "number"
+              ? response.commentCount
+              : (post.commentCount || 0) + 1,
+        };
       })
     );
     return response;
   } catch (err) {
     console.error("Error creating comment:", err);
-    alert(err.response?.data?.message || "Failed to add comment.");
+    alert(err?.response?.data?.message || "Failed to add comment.");
     throw err;
   }
 };
