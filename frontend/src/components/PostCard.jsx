@@ -1,6 +1,6 @@
 // src/components/PostCard.jsx
 import React, { useState, useEffect } from "react";
-import { getCommentsByPostId } from "../api";
+import { getCommentById  } from "../api";
 import SingleComment from "./SingleComment";
 import { API_URL } from "../config/config";
 
@@ -13,13 +13,14 @@ export default function PostCard({ post, onLike, onComment, currentUserId }) {
   const [showComments, setShowComments] = useState(false);
   const [postOwnerName, setPostOwnerName] = useState('');
   const [postOwnerId, setPostOwnerId] = useState('');
-
+ const [name, setName] = useState('');
+  
   const loadComments = async () => {
     try {
       const fetched = await Promise.all(
-        (post.commentIds || []).map((id) => getCommentsByPostId(id))
+        (post.commentIds || []).map((id) => getCommentById(id))
       );
-      setComments(fetched.map(c => c.comment).reverse());
+     setComments(fetched.reverse());
     } catch (err) {
       console.error("Failed to load comments:", err);
     }
@@ -41,7 +42,9 @@ export default function PostCard({ post, onLike, onComment, currentUserId }) {
         setPostOwnerName(data.profile.name);
         setPostOwnerId(data.profile._id);
       } else {
-        console.log(data['message']);
+          console.log('post',post);
+        console.log('post.userId', post.userId);
+        console.log('data',data);   
       }
     } catch (err) {
       console.error(err);
@@ -53,9 +56,36 @@ export default function PostCard({ post, onLike, onComment, currentUserId }) {
   },[])
 
 
+  useEffect(()=>{
+    const token = localStorage.getItem('token');
+    const fetchName = async() => {
+      try {
+        const res = await fetch(`${API_URL}/api/user/profile`, {
+        method: 'GET',
+        headers: {
+          'Content-Type':'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setName(data.profile.name);
+      } else {
+        console.error('Error fetching Name');
+      }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchName();
+  },[]);
+  
   useEffect(() => {
-    if (showComments) loadComments();
-  }, [showComments, post._id]);
+     if (showComments && post.commentIds?.length) {
+    loadComments();
+  }
+}, [showComments, post.commentIds]); // sync whenever IDs change
 
   const handleLike = async () => {
     if (!currentUserId) {
@@ -65,7 +95,7 @@ export default function PostCard({ post, onLike, onComment, currentUserId }) {
 
     setIsLiking(true);
     try {
-      await onLike(post._id);
+       const like = await onLike(post._id);
     } catch (err) {
       console.error("Error liking post:", err);
     } finally {
@@ -75,29 +105,39 @@ export default function PostCard({ post, onLike, onComment, currentUserId }) {
 
 
   const handleComment = async (e) => {
-    e.preventDefault();
-     if (!commentText.trim()) return;
-    if (!currentUserId) {
-      alert("Please log in to comment");
-      return;
-    }
+   e.preventDefault();
+  if (!commentText.trim()) return;
 
-    setIsCommenting(true);
-    try {
-      const response = await onComment(currentUserId, post._id, { id: postOwnerId, message: commentText });
-      setCommentText("");
-      setShowComments(true);
+  if (!currentUserId) {
+    alert("Please log in to comment");
+    return;
+  }
 
-      if (response?.comment) {
-        setComments((prev) => [response.comment, ...prev]);
-      }
-    } catch (err) {
-      console.error("Error creating comment:", err);
-      alert(err?.response?.data?.message || "Failed to add comment.");
-    } finally {
-      setIsCommenting(false);
-    }
-  };
+  setIsCommenting(true);
+  try {
+    console.log('currentUserId', currentUserId);
+    console.log('post._id', post._id);
+    console.log('postOwnerId', postOwnerId);
+    console.log('commentText', commentText);
+    const newComment = await onComment(
+      currentUserId,
+      post._id,
+      { id: postOwnerId, message: commentText }
+    );
+
+    setCommentText("");
+    setShowComments(true);
+
+    // append new comment immediately
+    setComments(prev => [newComment, ...prev]);
+
+  } catch (err) {
+    console.error("Error creating comment:", err);
+    alert(err?.response?.data?.message || "Failed to add comment.");
+  } finally {
+    setIsCommenting(false);
+  }
+};
 
   const commentCount = comments.length || post.commentIds?.length || 0;
 
@@ -132,7 +172,7 @@ export default function PostCard({ post, onLike, onComment, currentUserId }) {
           onClick={handleLike}
           disabled={isLiking}
           className={`flex items-center space-x-2 px-3 py-1 rounded-md transition-colors duration-200
-            ${post.likedBy?.includes(currentUserId) ? 'text-blue-600 hover:text-blue-800' : 'text-gray-600 hover:text-gray-800'}`}
+           ${post.likedBy?.includes(name) ? 'text-blue-600 hover:text-blue-800' : 'text-gray-600 hover:text-gray-800'}`}
         >
           <i className="fas fa-thumbs-up"></i>
           <span>
