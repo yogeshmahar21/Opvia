@@ -38,7 +38,7 @@ export default function Login({ updateAuth }) {
         console.error(err);
       }
        // Notify App.jsx about authentication change
-      navigate('/dashboard'); // Redirect to dashboard after successful login
+      navigate('/onboarding'); // Redirect to dashboard after successful login
     } catch (err) {
       console.error('Login error:', err.response?.data || err);
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
