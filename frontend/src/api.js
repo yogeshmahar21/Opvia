@@ -204,12 +204,12 @@ export const createComment = async (writerId, postId, commentData) => {
 };
 
 // Fetch all comments for a specific post
-export const getCommentsByPostId = async (postId) => {
+export const getCommentById = async (commentId) => {
   try {
-    const response = await api.get(`/api/comment/${postId}`);
-    return response.data; // should return an array of comments
+   const response = await api.get(`/api/comment/${commentId}`);
+    return response.data.comment;
   } catch (error) {
-    console.error('Error fetching comments:', error);
+     console.error('Error fetching comment by ID:', error);
     throw error;
   }
 };
