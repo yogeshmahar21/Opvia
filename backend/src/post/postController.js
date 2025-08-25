@@ -259,7 +259,10 @@ const likePost = async (req, res, next) => {
     }
 
     if(updatedPost){
-        res.status(200).json({'message' : 'liked post successfully'});
+          res.status(200).json({
+            like : likes,
+            likedBy: postLikers
+        });
     } else { 
         res.status(500).json({'error':'Internal Server Error'});
     }
